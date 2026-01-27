@@ -3,297 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F-store | Admin Manager</title>
+    <title>F-store Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background-color: #f8f9fa; }
-        
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .form-input { @apply w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00] transition; }
-    </style>
 </head>
-<body class="text-gray-800">
+<body class="bg-slate-100 text-slate-800 font-sans">
 
-    <div id="loginScreen" class="fixed inset-0 bg-[#111] z-50 flex flex-col items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-[#FF6B00] rounded-2xl flex items-center justify-center text-white text-3xl mx-auto mb-6 shadow-lg shadow-orange-200">
-                <i class="fas fa-lock"></i>
-            </div>
-            <h2 class="text-2xl font-black mb-1 uppercase">Admin Access</h2>
-            <p class="text-gray-400 text-xs font-bold mb-6 tracking-widest">ENTER PIN TO CONTINUE</p>
-            
-            <input type="password" id="adminPass" placeholder="PIN (1234)" class="w-full bg-gray-100 p-4 rounded-xl mb-4 text-center font-black text-xl outline-none border-2 border-transparent focus:border-[#FF6B00] transition">
-            
-            <button onclick="checkLogin()" class="w-full bg-[#FF6B00] text-white py-4 rounded-xl font-black shadow-lg hover:bg-orange-600 transition transform active:scale-95">UNLOCK</button>
-            <p id="errorMsg" class="text-red-500 text-xs font-bold mt-4 hidden">❌ Wrong Password</p>
+    <div id="login" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-xs text-center shadow-2xl">
+            <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-lock text-2xl text-orange-600"></i></div>
+            <h2 class="text-xl font-black mb-4 uppercase">Admin Panel</h2>
+            <input type="password" id="pin" placeholder="Enter PIN (1234)" class="w-full bg-slate-100 p-3 rounded-lg text-center font-bold text-lg mb-4 outline-none border focus:border-orange-500">
+            <button onclick="login()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800">LOGIN</button>
         </div>
     </div>
 
-    <div id="dashboard" class="hidden min-h-screen pb-10">
-        
-        <header class="glass sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-sm border-b border-gray-100">
-            <div class="flex items-center gap-2">
-                <div class="bg-[#FF6B00] w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black">A</div>
-                <h1 class="text-xl font-black italic tracking-tighter uppercase">F-Store <span class="text-[#FF6B00]">Admin</span></h1>
-            </div>
+    <div id="dash" class="hidden min-h-screen p-6 max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm">
+            <h1 class="text-2xl font-black italic text-slate-800">F-store <span class="text-orange-600">Admin</span></h1>
             <div class="flex gap-2">
-                <a href="index.html" target="_blank" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-gray-200">
-                    <i class="fas fa-eye"></i> <span class="hidden sm:inline">View App</span>
-                </a>
-                <button onclick="logout()" class="bg-red-50 text-red-500 px-3 py-2 rounded-xl hover:bg-red-100"><i class="fas fa-power-off"></i></button>
+                <button onclick="view('orders')" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-blue-100">ORDERS</button>
+                <button onclick="view('products')" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-orange-100">PRODUCTS</button>
+                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-slate-200">APP VIEW</a>
             </div>
         </header>
 
-        <div class="max-w-6xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <div class="lg:col-span-4">
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 sticky top-24">
-                    <h2 id="formTitle" class="text-xl font-black mb-6 flex items-center gap-2 text-gray-800">
-                        <i class="fas fa-plus-circle text-[#FF6B00]"></i> <span>Add New Item</span>
-                    </h2>
-                    
-                    <input type="hidden" id="editId"> <div class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Name</label>
-                            <input id="pName" type="text" placeholder="e.g. Cheese Burger" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00]">
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Price (₹)</label>
-                                <input id="pPrice" type="number" placeholder="199" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00]">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Category</label>
-                                <select id="pCat" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00]">
-                                    <option value="Food">🍔 Food</option>
-                                    <option value="Fashion">👕 Fashion</option>
-                                    <option value="Mobile">🎧 Mobile</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Badge (Optional)</label>
-                            <input id="pBadge" type="text" placeholder="e.g. HOT, NEW, 50% OFF" class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00]">
-                        </div>
-
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Image URL</label>
-                            <input id="pImg" type="text" placeholder="https://..." class="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm font-bold outline-none focus:border-[#FF6B00]" oninput="previewImage()">
-                        </div>
-
-                        <div id="imgPreviewBox" class="hidden h-32 rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center relative group">
-                            <img id="imgPreview" src="" class="w-full h-full object-cover">
-                        </div>
-
-                        <div class="flex gap-2 pt-2">
-                            <button id="saveBtn" onclick="saveProduct()" class="flex-1 bg-[#FF6B00] text-white py-3.5 rounded-xl font-black shadow-lg hover:bg-orange-600 transition active:scale-95">SAVE</button>
-                            <button onclick="resetForm()" class="px-5 py-3.5 bg-gray-100 text-gray-500 rounded-xl font-bold hover:bg-gray-200">Reset</button>
-                        </div>
-                    </div>
+        <div id="tab-products" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm h-fit sticky top-4">
+                <h3 class="font-bold text-lg mb-4">Manage Product</h3>
+                <input type="hidden" id="editId">
+                <div class="space-y-3">
+                    <input id="pName" placeholder="Product Name" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
+                    <input id="pPrice" placeholder="Price (₹)" type="number" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
+                    <select id="pCat" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold bg-white"><option>Food</option><option>Fashion</option><option>Mobile</option></select>
+                    <input id="pImg" placeholder="Image URL" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
+                    <button onclick="saveProd()" class="w-full bg-orange-600 text-white py-2.5 rounded-lg font-bold hover:bg-orange-700 transition">SAVE PRODUCT</button>
                 </div>
             </div>
+            <div class="md:col-span-2 grid grid-cols-2 gap-4" id="prodList"></div>
+        </div>
 
-            <div class="lg:col-span-8">
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-black text-gray-800">Products List <span id="totalCount" class="bg-black text-white px-2 py-0.5 rounded-md text-xs ml-2">0</span></h2>
-                        <button onclick="deleteAll()" class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition"><i class="fas fa-trash-alt mr-1"></i> Clear All</button>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="text-[10px] font-bold text-gray-400 uppercase border-b border-gray-100">
-                                    <th class="py-3 pl-2">Item</th>
-                                    <th class="py-3">Details</th>
-                                    <th class="py-3 text-right pr-2">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productList" class="text-sm font-bold text-gray-700">
-                                </tbody>
-                        </table>
-                        <div id="emptyMsg" class="hidden text-center py-10">
-                            <i class="fas fa-box-open text-4xl text-gray-200 mb-2"></i>
-                            <p class="text-gray-400 text-sm">No products added yet.</p>
-                        </div>
-                    </div>
-                </div>
+        <div id="tab-orders">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b">
+                        <tr><th class="p-4">ID</th><th class="p-4">Customer</th><th class="p-4">Total</th><th class="p-4">Status</th><th class="p-4">Actions</th></tr>
+                    </thead>
+                    <tbody id="orderList" class="text-sm font-bold text-slate-700 divide-y divide-slate-100"></tbody>
+                </table>
             </div>
-
         </div>
     </div>
 
     <script>
-        const ADMIN_PIN = "1234";
-        
-        // Default Data Backup (Same as Index.html)
-        const defaultData = [
-            { id: 1, name: "Zinger Burger", price: 179, cat: "Food", badge: "HOT", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
-            { id: 2, name: "Nike Air Max", price: 2499, cat: "Fashion", badge: "NEW", img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400" },
-            { id: 3, name: "AirPods Pro", price: 1999, cat: "Mobile", badge: "PRO", img: "https://images.unsplash.com/photo-1588423770674-f281137a3e74?w=400" }
-        ];
-
-        let products = [];
-
-        // --- LOGIN LOGIC ---
-        function checkLogin() {
-            if(document.getElementById('adminPass').value === ADMIN_PIN) {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
-                loadData();
-            } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
-            }
+        function login(){ 
+            if(document.getElementById('pin').value==='1234'){ 
+                document.getElementById('login').classList.add('hidden'); 
+                document.getElementById('dash').classList.remove('hidden'); 
+                renderOrders();
+            } else alert("Wrong PIN"); 
         }
-        function logout() { location.reload(); }
-
-        // --- DATA HANDLING ---
-        function loadData() {
-            const stored = localStorage.getItem('f_products');
-            if(stored) {
-                products = JSON.parse(stored);
-            } else {
-                products = defaultData;
-                localStorage.setItem('f_products', JSON.stringify(products));
-            }
-            renderTable();
+        function view(t){ 
+            document.getElementById('tab-orders').classList.add('hidden'); 
+            document.getElementById('tab-products').classList.add('hidden'); 
+            document.getElementById('tab-'+t).classList.remove('hidden'); 
+            if(t==='products') renderProds(); else renderOrders();
         }
 
-        function renderTable() {
-            const list = document.getElementById('productList');
-            list.innerHTML = "";
-            document.getElementById('totalCount').innerText = products.length;
-
-            if(products.length === 0) {
-                document.getElementById('emptyMsg').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyMsg').classList.add('hidden');
-                // Newest first
-                products.forEach(p => {
-                    const row = `
-                        <tr class="border-b border-gray-50 last:border-none hover:bg-gray-50 transition group">
-                            <td class="py-3 pl-2 flex items-center gap-3">
-                                <img src="${p.img}" class="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-200">
-                                <div>
-                                    <p class="text-gray-800 leading-tight text-sm">${p.name}</p>
-                                    <span class="text-[9px] text-[#FF6B00] font-black uppercase">₹${p.price}</span>
-                                </div>
-                            </td>
-                            <td class="py-3">
-                                <div class="flex flex-col gap-1">
-                                    <span class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded w-fit uppercase font-bold">${p.cat}</span>
-                                    <span class="text-[9px] text-white bg-black px-2 py-0.5 rounded w-fit">${p.badge || '-'}</span>
-                                </div>
-                            </td>
-                            <td class="py-3 text-right pr-2">
-                                <button onclick="editProduct(${p.id})" class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition shadow-sm"><i class="fas fa-pen"></i></button>
-                                <button onclick="deleteProduct(${p.id})" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition shadow-sm ml-1"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                    list.innerHTML += row;
-                });
-            }
+        // --- PRODUCTS ---
+        function renderProds() {
+            let prods = JSON.parse(localStorage.getItem('f_products')) || [];
+            document.getElementById('prodList').innerHTML = prods.map(p => `
+                <div class="bg-white p-3 rounded-xl border border-slate-200 relative group hover:shadow-md transition">
+                    <img src="${p.img}" class="h-24 w-full object-cover rounded-lg mb-2 bg-slate-50">
+                    <div class="font-bold text-sm text-slate-800 truncate">${p.name}</div>
+                    <div class="text-orange-600 font-bold text-xs">₹${p.price}</div>
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="editP(${p.id})" class="bg-white p-1.5 rounded shadow text-blue-500"><i class="fas fa-pen"></i></button>
+                        <button onclick="delP(${p.id})" class="bg-white p-1.5 rounded shadow text-red-500"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
         }
+        function saveProd() {
+            let id = document.getElementById('editId').value;
+            let name = document.getElementById('pName').value;
+            let price = document.getElementById('pPrice').value;
+            let cat = document.getElementById('pCat').value;
+            let img = document.getElementById('pImg').value;
+            if(!name) return alert("Enter Name");
 
-        // --- ADD / EDIT ---
-        function saveProduct() {
-            const id = document.getElementById('editId').value;
-            const name = document.getElementById('pName').value.trim();
-            const price = document.getElementById('pPrice').value;
-            const cat = document.getElementById('pCat').value;
-            const badge = document.getElementById('pBadge').value.trim();
-            const img = document.getElementById('pImg').value.trim();
-
-            if(!name || !price || !img) return alert("Please fill Name, Price & Image!");
-
+            let prods = JSON.parse(localStorage.getItem('f_products')) || [];
             if(id) {
-                // Edit Existing
-                const index = products.findIndex(p => p.id == id);
-                if(index > -1) products[index] = { id: parseInt(id), name, price: parseInt(price), cat, badge, img };
+                let idx = prods.findIndex(p=>p.id==id);
+                prods[idx] = {id: parseInt(id), name, price:parseInt(price), cat, img};
             } else {
-                // Add New (Add to beginning)
-                products.unshift({
-                    id: Date.now(),
-                    name, price: parseInt(price), cat, badge: badge || "NEW", img
-                });
+                prods.unshift({id: Date.now(), name, price:parseInt(price), cat, img});
             }
-
-            saveAndRefresh();
-            resetForm();
-        }
-
-        // --- DELETE ---
-        function deleteProduct(id) {
-            if(confirm("Delete this product permanently?")) {
-                products = products.filter(p => p.id !== id);
-                saveAndRefresh();
-            }
-        }
-
-        function deleteAll() {
-            if(confirm("⚠️ Warning: This will delete ALL products!")) {
-                products = [];
-                saveAndRefresh();
-            }
-        }
-
-        // --- HELPER FUNCTIONS ---
-        function editProduct(id) {
-            const p = products.find(x => x.id === id);
-            if(p) {
-                document.getElementById('editId').value = p.id;
-                document.getElementById('pName').value = p.name;
-                document.getElementById('pPrice').value = p.price;
-                document.getElementById('pCat').value = p.cat;
-                document.getElementById('pBadge').value = p.badge;
-                document.getElementById('pImg').value = p.img;
-                
-                // Update UI text
-                document.getElementById('formTitle').innerHTML = `<i class="fas fa-edit text-blue-500"></i> <span class="text-blue-500">Edit Item</span>`;
-                const btn = document.getElementById('saveBtn');
-                btn.innerText = "UPDATE";
-                btn.classList.replace('bg-[#FF6B00]', 'bg-blue-600');
-                
-                previewImage();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function resetForm() {
+            localStorage.setItem('f_products', JSON.stringify(prods));
             document.getElementById('editId').value = "";
-            document.getElementById('pName').value = "";
-            document.getElementById('pPrice').value = "";
-            document.getElementById('pBadge').value = "";
-            document.getElementById('pImg').value = "";
-            document.getElementById('imgPreviewBox').classList.add('hidden');
-            
-            // Reset UI text
-            document.getElementById('formTitle').innerHTML = `<i class="fas fa-plus-circle text-[#FF6B00]"></i> <span>Add New Item</span>`;
-            const btn = document.getElementById('saveBtn');
-            btn.innerText = "SAVE";
-            btn.classList.replace('bg-blue-600', 'bg-[#FF6B00]');
+            renderProds();
         }
+        function delP(id){ if(confirm("Delete?")){ let p = JSON.parse(localStorage.getItem('f_products')).filter(x=>x.id!==id); localStorage.setItem('f_products', JSON.stringify(p)); renderProds(); } }
+        function editP(id){ let p = JSON.parse(localStorage.getItem('f_products')).find(x=>x.id===id); document.getElementById('editId').value=p.id; document.getElementById('pName').value=p.name; document.getElementById('pPrice').value=p.price; document.getElementById('pImg').value=p.img; }
 
-        function saveAndRefresh() {
-            localStorage.setItem('f_products', JSON.stringify(products));
-            renderTable();
+        // --- ORDERS ---
+        function renderOrders() {
+            let orders = JSON.parse(localStorage.getItem('f_orders')) || [];
+            document.getElementById('orderList').innerHTML = orders.map((o,i) => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 text-orange-600">#${o.id}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-800">${o.customer.name}</div>
+                        <div class="text-xs text-slate-400">${o.payment}</div>
+                    </td>
+                    <td class="p-4">₹${o.total}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${o.status==='Pending'?'bg-yellow-100 text-yellow-700':o.status==='Delivered'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${o.status}</span></td>
+                    <td class="p-4 flex gap-2">
+                        ${o.status==='Pending' ? `<button onclick="stats(${i},'Accepted')" class="text-blue-600 hover:underline text-xs">Accept</button>` : ''}
+                        ${o.status==='Accepted' ? `<button onclick="stats(${i},'Out for Delivery')" class="text-purple-600 hover:underline text-xs">Dispatch</button>` : ''}
+                        <button onclick="delO(${i})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
         }
-
-        function previewImage() {
-            const url = document.getElementById('pImg').value;
-            const box = document.getElementById('imgPreviewBox');
-            if(url) {
-                document.getElementById('imgPreview').src = url;
-                box.classList.remove('hidden');
-            } else {
-                box.classList.add('hidden');
-            }
-        }
+        function stats(i,s){ let o = JSON.parse(localStorage.getItem('f_orders')); o[i].status=s; localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); }
+        function delO(i){ if(confirm("Delete Order?")){ let o = JSON.parse(localStorage.getItem('f_orders')); o.splice(i,1); localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); } }
+        
+        setInterval(renderOrders, 5000);
     </script>
 </body>
 </html>
