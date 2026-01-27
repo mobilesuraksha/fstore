@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F-store | Verified Shopping & Delivery</title>
+    <title>F-store | Premium Verified Shopping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -13,14 +13,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap');
         :root { --orange: #FF6B00; }
-        body { font-family: 'Outfit', sans-serif; background-color: #fdfdfd; scroll-behavior: smooth; }
+        body { font-family: 'Outfit', sans-serif; background-color: #fcfcfc; scroll-behavior: smooth; }
         .orange-bg { background-color: var(--orange); }
         .orange-text { color: var(--orange); }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .p-card { transition: 0.3s; background: white; border: 1px solid #f0f0f0; border-radius: 1.5rem; overflow: hidden; }
-        .p-card:hover { border-color: var(--orange); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(255,107,0,0.1); }
-        .slider-track { display: flex; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .slider-track { display: flex; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .p-card { transition: 0.3s; background: white; border: 1px solid #f0f0f0; border-radius: 1.5rem; overflow: hidden; }
+        .p-card:hover { transform: translateY(-5px); border-color: var(--orange); box-shadow: 0 10px 20px rgba(255,107,0,0.05); }
         #auth-screen { z-index: 2000; background: white; }
     </style>
 </head>
@@ -33,11 +33,11 @@
                     <span class="font-black italic">F</span>
                 </div>
                 <h1 class="text-4xl font-black italic tracking-tighter uppercase text-gray-800">F-<span class="orange-text">store</span></h1>
-                <p class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-2">Verified Gaming & Delivery Hub</p>
+                <p id="auth-status" class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-2">Verified Gaming & Delivery Hub</p>
             </div>
             <button onclick="loginWithGoogle()" class="w-full bg-white border-2 border-gray-100 p-4 rounded-2xl flex items-center justify-center gap-4 hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="22">
-                <span class="font-black text-gray-700 uppercase text-xs">Sign in with Google</span>
+                <span class="font-black text-gray-700 uppercase text-xs">Sign in with Google Account</span>
             </button>
         </div>
     </div>
@@ -47,8 +47,9 @@
             <h1 class="text-2xl font-black italic tracking-tighter uppercase">F-<span class="orange-text">store</span></h1>
             <div class="flex items-center gap-4">
                 <button onclick="showHistory()" class="text-gray-400"><i class="fas fa-history text-xl"></i></button>
-                <img id="userAvatar" src="" class="w-9 h-9 rounded-full border-2 border-orange-500">
+                <img id="userAvatar" src="" class="w-9 h-9 rounded-full border-2 border-orange-500 shadow-sm">
                 <button onclick="checkAdmin()" class="text-gray-300"><i class="fas fa-cog"></i></button>
+                <button onclick="logout()" class="text-gray-400"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </header>
 
@@ -61,43 +62,46 @@
         <div class="p-5 max-w-6xl mx-auto overflow-hidden">
             <div class="slider-track rounded-[2.5rem] h-44 shadow-lg" id="mainSlider">
                 <div class="min-w-full orange-bg p-10 text-white flex items-center justify-between">
-                    <div><h2 class="text-3xl font-black italic uppercase">Super Sale</h2><p class="text-xs font-bold opacity-80 mt-1 uppercase">Order Food & Save 50%</p></div>
-                    <i class="fas fa-bolt text-7xl opacity-20"></i>
+                    <div><h2 class="text-3xl font-black italic uppercase">Super Sale</h2><p class="text-xs font-bold opacity-80 mt-1 uppercase">Fresh Food Delivery</p></div>
+                    <i class="fas fa-pizza-slice text-7xl opacity-20"></i>
                 </div>
                 <div class="min-w-full bg-black p-10 text-white flex items-center justify-between">
-                    <div><h2 class="text-3xl font-black italic uppercase">Gaming Gear</h2><p class="text-xs font-bold opacity-80 mt-1 uppercase">New Mobile Accessories</p></div>
+                    <div><h2 class="text-3xl font-black italic uppercase">Gaming Gear</h2><p class="text-xs font-bold opacity-80 mt-1 uppercase">Best Accessories 2026</p></div>
                     <i class="fas fa-headset text-7xl opacity-20"></i>
                 </div>
             </div>
         </div>
 
-        <div class="px-5 mb-8">
-            <input type="text" id="searchInput" oninput="runSearch()" placeholder="Search Burger, Jeans, Accessories..." class="w-full bg-gray-100 py-4 px-6 rounded-2xl border-none outline-none focus:ring-2 focus:ring-[#FF6B00]">
+        <div class="px-5 mb-8 max-w-6xl mx-auto">
+            <div class="relative">
+                <input type="text" id="searchInput" oninput="runSearch()" placeholder="Search Burger, Jeans, Accessories..." class="w-full bg-gray-100 py-4 px-6 rounded-2xl border-none outline-none focus:ring-2 focus:ring-[#FF6B00]">
+                <i class="fas fa-search absolute right-6 top-5 text-gray-300"></i>
+            </div>
         </div>
 
         <main class="max-w-7xl mx-auto px-5 space-y-12 mb-32">
             <section id="sec-Food">
-                <h2 class="text-xl font-black mb-6 italic">🍕 Order <span class="orange-text">Food</span></h2>
+                <h2 class="text-xl font-black mb-6 italic uppercase">🍕 Fresh <span class="orange-text">Food</span></h2>
                 <div id="list-Food" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5"></div>
             </section>
             <section id="sec-Fashion">
-                <h2 class="text-xl font-black mb-6 italic">👕 New <span class="orange-text">Fashion</span></h2>
+                <h2 class="text-xl font-black mb-6 italic uppercase">👕 New <span class="orange-text">Fashion</span></h2>
                 <div id="list-Fashion" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5"></div>
             </section>
             <section id="sec-Mobile">
-                <h2 class="text-xl font-black mb-6 italic">🎮 Gaming <span class="orange-text">Hub</span></h2>
+                <h2 class="text-xl font-black mb-6 italic uppercase">🎮 Gaming <span class="orange-text">Hub</span></h2>
                 <div id="list-Mobile" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5"></div>
             </section>
         </main>
 
         <footer class="bg-gray-950 text-white p-10 pb-40">
-            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div>
                     <h3 class="text-2xl font-black orange-text italic">F-store</h3>
-                    <p class="text-gray-500 text-sm mt-2 leading-relaxed text-balance">Premium Delivery Service for Food, Fashion & Gaming Accessories.</p>
+                    <p class="text-gray-500 text-sm mt-2">Verified Delivery Service for Food, Fashion & Gaming Accessories.</p>
                 </div>
                 <div>
-                    <h4 class="font-bold mb-4">Support</h4>
+                    <h4 class="font-bold mb-4">Contact & Social</h4>
                     <p class="text-gray-400 text-sm">WhatsApp: +91 8468966897</p>
                     <div class="flex gap-4 mt-4 text-2xl">
                         <a href="#"><i class="fab fa-youtube"></i></a>
@@ -112,17 +116,28 @@
     <div id="cartBar" class="fixed bottom-6 left-4 right-4 bg-gray-900 text-white p-4 rounded-[2rem] flex justify-between items-center hidden z-[110] shadow-2xl">
         <div class="flex items-center gap-4">
             <div class="orange-bg w-10 h-10 rounded-xl flex items-center justify-center"><i class="fas fa-shopping-basket"></i></div>
-            <div><span id="cartCount" class="font-bold block text-sm">0 Items</span><p id="cartTotal" class="text-[10px] text-orange-400 font-bold uppercase">₹0</p></div>
+            <span id="cartInfo" class="font-bold text-sm">0 Items | ₹0</span>
         </div>
-        <button onclick="openCart()" class="bg-white text-black px-6 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest">Checkout</button>
+        <button onclick="openCart()" class="bg-white text-black px-6 py-2 rounded-xl font-black text-[10px] uppercase">Checkout</button>
     </div>
 
     <div id="cartModal" class="fixed inset-0 bg-black/80 hidden z-[200] flex items-end justify-center">
         <div class="bg-white w-full max-w-md rounded-t-[3rem] p-8 max-h-[85vh] overflow-y-auto">
             <h2 class="text-2xl font-black mb-6 italic uppercase">Basket Summary</h2>
             <div id="modalCartList" class="space-y-3 mb-6"></div>
-            <input type="text" id="finalAddr" placeholder="Flat No. / Street / House No." class="w-full p-4 bg-gray-50 rounded-2xl mb-4 outline-none">
-            <button onclick="requestLocation()" class="w-full orange-bg text-white py-5 rounded-[1.8rem] font-black text-lg shadow-lg">CONFIRM ORDER</button>
+            <input type="text" id="finalAddr" placeholder="Street / Landmark / Flat No." class="w-full p-4 bg-gray-100 rounded-2xl mb-4 border-none outline-none focus:ring-2 focus:ring-orange-500">
+            <div class="flex justify-between font-bold text-xl py-4 border-b mb-4"><span>Total Amount</span><span id="finalAmt" class="orange-text">₹0</span></div>
+            <button onclick="requestLocation()" class="w-full orange-bg text-white py-5 rounded-[1.8rem] font-black text-lg">CONFIRM ORDER</button>
+        </div>
+    </div>
+
+    <div id="historyModal" class="fixed inset-0 bg-black/80 hidden z-[300] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-8 max-h-[70vh] overflow-y-auto">
+            <div class="flex justify-between mb-6">
+                <h2 class="text-2xl font-black italic">My Orders</h2>
+                <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-2xl">×</button>
+            </div>
+            <div id="historyList" class="space-y-3"></div>
         </div>
     </div>
 
@@ -134,19 +149,9 @@
             <select id="pCat" class="w-full p-4 border rounded-2xl">
                 <option value="Food">Food</option><option value="Fashion">Fashion</option><option value="Mobile">Mobile</option>
             </select>
-            <input type="text" id="pImg" placeholder="Image Name (e.g. pizza.jpg)" class="w-full p-4 border rounded-2xl">
+            <input type="text" id="pImg" placeholder="Image Name (GitHub images/)" class="w-full p-4 border rounded-2xl">
             <button onclick="saveProduct()" class="w-full orange-bg text-white py-4 rounded-2xl font-bold">ADD PRODUCT</button>
             <button onclick="closeAdmin()" class="w-full text-red-500 mt-4 font-bold">EXIT</button>
-        </div>
-    </div>
-
-    <div id="historyModal" class="fixed inset-0 bg-black/80 hidden z-[300] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-lg rounded-3xl p-8 max-h-[70vh] overflow-y-auto">
-            <div class="flex justify-between mb-6">
-                <h2 class="text-2xl font-black italic">Order History</h2>
-                <button onclick="document.getElementById('historyModal').classList.add('hidden')" class="text-2xl">×</button>
-            </div>
-            <div id="historyList" class="space-y-4"></div>
         </div>
     </div>
 
@@ -154,8 +159,6 @@
         // 1. CONFIG
         const ADMIN_PWD = "1234";
         const WA_NUMBER = "918468966897";
-        const IMG_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/images/";
-
         const firebaseConfig = {
             apiKey: "AIzaSyCHNuNkU196lZ_PyXMIP3yHL35FoGOBSIs",
             authDomain: "fastfood-235d7.firebaseapp.com",
@@ -167,43 +170,49 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // 2. DATA & RENDER
+        // 2. DATA
         let cart = [];
         let products = [
-            { id: 1, name: "Special Burger XL", price: 150, cat: "Food", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
-            { id: 2, name: "Premium Hoodie", price: 1299, cat: "Fashion", img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400" }
+            { id: 1, name: "Special Veg Pizza", price: 299, cat: "Food", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400" },
+            { id: 2, name: "Double Tikki Burger", price: 150, cat: "Food", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400" },
+            { id: 3, name: "Oversized Cotton Tee", price: 799, cat: "Fashion", img: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=400" },
+            { id: 4, name: "Gaming Bluetooth Buds", price: 1299, cat: "Mobile", img: "https://images.unsplash.com/photo-1588423770674-f281137a3e74?w=400" }
         ];
 
+        // 3. AUTH LOGIC
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            document.getElementById('auth-status').innerText = "Connecting to Google...";
+            auth.signInWithRedirect(provider);
+        }
+
+        auth.getRedirectResult().then(result => { if (result.user) initApp(result.user); });
+
+        auth.onAuthStateChanged(user => { if (user) initApp(user); });
+
+        function initApp(user) {
+            document.getElementById('auth-screen').style.display = "none";
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('userAvatar').src = user.photoURL;
+            render();
+        }
+
+        // 4. CORE LOGIC
         function render(data = products) {
             ['Food', 'Fashion', 'Mobile'].forEach(cat => {
                 const list = document.getElementById(`list-${cat}`);
                 list.innerHTML = data.filter(p => p.cat === cat).map(p => `
                     <div class="p-card p-4">
-                        <img src="${p.img}" class="w-full h-32 object-cover rounded-2xl mb-3" onerror="this.src='https://via.placeholder.com/150'">
-                        <h3 class="font-bold text-xs truncate">${p.name}</h3>
+                        <img src="${p.img}" class="w-full h-28 object-cover rounded-2xl mb-3" onerror="this.src='https://via.placeholder.com/150'">
+                        <h3 class="font-bold text-[11px] truncate uppercase">${p.name}</h3>
                         <div class="flex justify-between items-center mt-3">
-                            <span class="orange-text font-black">₹${p.price}</span>
+                            <span class="orange-text font-black text-sm">₹${p.price}</span>
                             <button onclick="addToCart(${p.id})" class="orange-bg text-white w-9 h-9 rounded-xl"><i class="fas fa-plus text-xs"></i></button>
                         </div>
                     </div>
                 `).join('');
             });
         }
-
-        // 3. CORE LOGIC
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithRedirect(provider);
-        }
-
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-screen').style.display = "none";
-                document.getElementById('main-content').classList.remove('hidden');
-                document.getElementById('userAvatar').src = user.photoURL;
-                render();
-            }
-        });
 
         function addToCart(id) {
             const p = products.find(x => x.id === id);
@@ -216,8 +225,8 @@
             const count = cart.reduce((a, b) => a + b.qty, 0);
             const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
             document.getElementById('cartBar').classList.toggle('hidden', count === 0);
-            document.getElementById('cartCount').innerText = `${count} Items`;
-            document.getElementById('cartTotal').innerText = `₹${total}`;
+            document.getElementById('cartInfo').innerText = `${count} Items | ₹${total}`;
+            document.getElementById('finalAmt').innerText = `₹${total}`;
             document.getElementById('modalCartList').innerHTML = cart.map(i => `
                 <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border font-bold text-xs">
                     <span>${i.name} (x${i.qty})</span>
@@ -241,10 +250,9 @@
             const user = auth.currentUser;
             const total = cart.reduce((a, b) => a + (b.price * b.qty), 0);
             
-            // History
-            let history = JSON.parse(localStorage.getItem('fOrders') || '[]');
-            history.unshift({ date: new Date().toLocaleString(), total, items: cart.length });
-            localStorage.setItem('fOrders', JSON.stringify(history));
+            let hist = JSON.parse(localStorage.getItem('fOrders') || '[]');
+            hist.unshift({ date: new Date().toLocaleString(), total });
+            localStorage.setItem('fOrders', JSON.stringify(hist));
 
             let list = cart.map(i => `• ${i.name} x ${i.qty}`).join('%0A');
             const msg = `🚀 *F-STORE ORDER*%0A---%0A${list}%0A---%0A💰 *Total: ₹${total}*%0A👤 *User:* ${user.displayName}%0A📍 *Live Location:* ${loc}%0A🏠 *Address:* ${addr}`;
@@ -256,18 +264,18 @@
             const orders = JSON.parse(localStorage.getItem('fOrders') || '[]');
             document.getElementById('historyModal').classList.remove('hidden');
             document.getElementById('historyList').innerHTML = orders.length ? orders.map(o => `
-                <div class="bg-gray-50 p-4 rounded-2xl border">
-                    <p class="text-[9px] text-gray-400 font-bold uppercase">${o.date}</p>
-                    <div class="flex justify-between mt-1 font-bold"><span>Order Summary</span><span class="orange-text">₹${o.total}</span></div>
+                <div class="bg-gray-50 p-4 rounded-2xl border flex justify-between items-center">
+                    <div><p class="text-[8px] text-gray-400 font-bold uppercase">${o.date}</p><p class="font-bold text-sm">Order Logged</p></div>
+                    <span class="orange-text font-black text-sm">₹${o.total}</span>
                 </div>
-            `).join('') : '<p class="text-center text-gray-400">No orders yet.</p>';
+            `).join('') : '<p class="text-center text-gray-400">No orders found.</p>';
         }
 
-        // Utils
         function runSearch() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             render(products.filter(p => p.name.toLowerCase().includes(q)));
         }
+
         function scrollToSec(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
         function logout() { auth.signOut().then(() => location.reload()); }
         function checkAdmin() { if(prompt("Admin PIN:") === ADMIN_PWD) document.getElementById('adminModal').classList.remove('hidden'); }
@@ -278,18 +286,18 @@
             const cat = document.getElementById('pCat').value;
             const img = document.getElementById('pImg').value;
             if(title && price) {
-                products.unshift({id: Date.now(), name: title, price, cat, img: IMG_URL + img});
+                products.unshift({id: Date.now(), name: title, price, cat, img: 'https://via.placeholder.com/150'});
                 render(); closeAdmin();
             }
         }
         function openCart() { document.getElementById('cartModal').classList.remove('hidden'); }
         function closeCart() { document.getElementById('cartModal').classList.add('hidden'); }
-        
+
         // Slider Auto
-        let idx = 0;
+        let sIdx = 0;
         setInterval(() => {
-            idx = (idx + 1) % 2;
-            document.getElementById('mainSlider').style.transform = `translateX(-${idx * 100}%)`;
+            sIdx = (sIdx + 1) % 2;
+            document.getElementById('mainSlider').style.transform = `translateX(-${sIdx * 100}%)`;
         }, 5000);
     </script>
 </body>
