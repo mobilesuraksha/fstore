@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Dashboard | F-Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <div id="loginUI" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-6">
+        <div class="w-full max-w-sm text-center">
+            <i class="fas fa-store text-6xl text-orange-600 mb-4"></i>
+            <h2 class="text-3xl font-black mb-6">SELLER LOGIN</h2>
+            <input id="sPhone" type="number" placeholder="Shop Mobile (ID)" class="w-full border p-3 rounded-lg mb-3">
+            <input id="sPass" type="password" placeholder="Password (Given by Admin)" class="w-full border p-3 rounded-lg mb-3">
+            <button onclick="loginShop()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold">LOGIN</button>
+        </div>
+    </div>
+
+    <div id="dashUI" class="hidden min-h-screen pb-20">
+        <header class="bg-white p-4 shadow sticky top-0 z-40 flex justify-between items-center">
+            <h1 class="text-xl font-black text-orange-600" id="shopName">My Shop</h1>
+            <button onclick="logout()" class="text-red-500 font-bold text-sm">LOGOUT</button>
+        </header>
+
+        <div class="p-4 space-y-6">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p class="text-xs text-gray-500 font-bold uppercase">Pending</p>
+                    <h2 class="text-2xl font-black text-blue-600" id="cntPending">0</h2>
+                </div>
+                <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                    <p class="text-xs text-gray-500 font-bold uppercase">Earnings</p>
+                    <h2 class="text-2xl font-black text-green-600" id="cntEarn">₹0</h2>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border">
+                <h3 class="font-bold mb-3">Add New Item</h3>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input id="pName" placeholder="Item Name" class="border p-2 rounded text-sm">
+                    <input id="pPrice" type="number" placeholder="Price" class="border p-2 rounded text-sm">
+                </div>
+                <input id="pImg" placeholder="Image URL" class="w-full border p-2 rounded text-sm mb-2">
+                <select id="pCat" class="w-full border p-2 rounded text-sm mb-2"><option>Food</option><option>Fashion</option><option>Mobile</option></select>
+                <button onclick="addProd()" class="w-full bg-slate-900 text-white py-2 rounded font-bold text-sm">ADD TO MENU</button>
+            </div>
+
+            <div>
+                <h3 class="font-bold text-lg mb-2">Live Orders</h3>
+                <div id="orderList" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentShop = null;
+
+        function loginShop() {
+            let phone = document.getElementById('sPhone').value;
+            let pass = document.getElementById('sPass').value;
+            let shops = JSON.parse(localStorage.getItem('f_shops')) || [];
+            let shop = shops.find(s => s.phone == phone && s.pass == pass);
+            
+            if(shop) {
+                currentShop = shop;
+                document.getElementById('loginUI').classList.add('hidden');
+                document.getElementById('dashUI').classList.remove('hidden');
+                document.getElementById('shopName').innerText = shop.name;
+                loadData();
+            } else { alert("Invalid Credentials"); }
+        }
+
+        function logout() { location.reload(); }
+
+        function loadData() {
+            let orders = JSON.parse(localStorage.getItem('f_orders')) || [];
+            // Filter orders for THIS shop
+            let myOrders = orders.filter(o => o.shopId == currentShop.id);
+            
+            // Stats
+            document.getElementById('cntPending').innerText = myOrders.filter(o=>o.status=='Pending').length;
+            document.getElementById('cntEarn').innerText = '₹' + myOrders.filter(o=>o.status=='Delivered').reduce((a,b)=>a+parseInt(b.total),0);
+
+            // Render Orders
+            const list = document.getElementById('orderList');
+            if(myOrders.length === 0) { list.innerHTML = "<p class='text-center text-gray-400'>No orders yet</p>"; return; }
+
+            list.innerHTML = myOrders.slice().reverse().map((o, i) => {
+                // Actual index in main array
+                let mainIdx = orders.findIndex(x => x.id == o.id);
+                
+                let btn = '';
+                if(o.status === 'Pending') btn = `<button onclick="updateStatus(${mainIdx}, 'Preparing')" class="w-full bg-blue-600 text-white py-2 rounded font-bold mt-2">ACCEPT & PREPARE</button>`;
+                else if(o.status === 'Preparing') btn = `<button onclick="updateStatus(${mainIdx}, 'Accepted')" class="w-full bg-green-600 text-white py-2 rounded font-bold mt-2">FOOD READY (Find Rider)</button>`;
+                else btn = `<p class="text-center text-xs font-bold text-gray-400 mt-2">Status: ${o.status}</p>`;
+
+                return `
+                <div class="bg-white p-4 rounded-xl border shadow-sm">
+                    <div class="flex justify-between font-bold text-sm"><span>#${o.id}</span><span>₹${o.total}</span></div>
+                    <div class="text-xs text-gray-500 mt-1">${o.items.map(x=>`${x.qty}x ${x.name}`).join(', ')}</div>
+                    ${btn}
+                </div>`;
+            }).join('');
+        }
+
+        function updateStatus(idx, status) {
+            let orders = JSON.parse(localStorage.getItem('f_orders'));
+            orders[idx].status = status;
+            
+            // AUTO ASSIGN LOGIC (Simulated)
+            if(status === 'Accepted') {
+                // Logic: Find free rider in Admin, here we just mark it ready for Admin to assign or Auto-assign
+                // For simplicity, we keep it 'Accepted' so Admin/System assigns rider
+                alert("Order Marked Ready! Admin/Rider notified.");
+            }
+            
+            localStorage.setItem('f_orders', JSON.stringify(orders));
+            loadData();
+        }
+
+        function addProd() {
+            let name = document.getElementById('pName').value;
+            let price = document.getElementById('pPrice').value;
+            let img = document.getElementById('pImg').value;
+            let cat = document.getElementById('pCat').value;
+            
+            if(!name || !price) return alert("Fill details");
+
+            let prods = JSON.parse(localStorage.getItem('f_products')) || [];
+            prods.unshift({
+                id: Date.now(),
+                shopId: currentShop.id, // Link product to this shop
+                name, price, img, cat, type: 'Veg'
+            });
+            localStorage.setItem('f_products', JSON.stringify(prods));
+            alert("Product Added!");
+            document.getElementById('pName').value = "";
+        }
+
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>

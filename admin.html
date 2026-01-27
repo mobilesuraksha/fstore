@@ -3,164 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F-Store Admin</title>
+    <title>Super Admin | Master Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { font-family: sans-serif; background: #f8fafc; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-active { background-color: #0f172a; color: white; }
+        .btn-inactive { background-color: white; color: #64748b; }
+        .btn-inactive:hover { background-color: #f8fafc; }
+    </style>
 </head>
 <body class="text-slate-800">
 
-    <div id="login" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
-            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-lock text-2xl text-orange-600"></i>
-            </div>
-            <h2 class="text-2xl font-black mb-4 uppercase">Admin Panel</h2>
+    <div id="loginSection" class="fixed inset-0 bg-slate-900 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+            <i class="fas fa-user-secret text-5xl text-slate-800 mb-4"></i>
+            <h2 class="text-2xl font-black mb-1 uppercase tracking-tighter">Master Admin</h2>
+            <p class="text-xs text-slate-400 mb-6 font-bold">CONTROL EVERYTHING</p>
             
-            <input type="password" id="pin" placeholder="Enter Password" 
-                class="w-full bg-slate-50 border p-3 rounded-lg text-center font-bold text-lg mb-4 outline-none focus:border-orange-500 transition">
-            
-            <button onclick="login()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg">LOGIN</button>
-            <p id="errorMsg" class="text-red-500 text-xs font-bold mt-3 opacity-0">Incorrect Password</p>
+            <form onsubmit="event.preventDefault(); authAdmin();">
+                <input type="password" id="adminPass" placeholder="Enter PIN" 
+                    class="w-full bg-slate-100 border border-slate-200 p-4 rounded-xl text-center font-black text-lg outline-none focus:ring-2 focus:ring-slate-800 transition mb-4">
+                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition shadow-lg">ACCESS PANEL</button>
+            </form>
+            <p id="loginErr" class="text-red-500 text-xs font-bold mt-4 opacity-0">🚫 Access Denied</p>
         </div>
     </div>
 
-    <div id="dash" class="hidden min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 gap-4">
-            <h1 class="text-2xl font-black italic text-slate-800">F-Store <span class="text-orange-600">Admin</span></h1>
-            <div class="flex gap-2 bg-slate-100 p-1 rounded-xl">
-                <button onclick="view('orders')" id="btn-orders" class="px-4 py-2 rounded-lg font-bold text-xs transition bg-white shadow text-blue-600">ORDERS</button>
-                <button onclick="view('products')" id="btn-products" class="px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500">PRODUCTS</button>
-                <button onclick="view('riders')" id="btn-riders" class="px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500">RIDERS</button>
+    <div id="dashboardSection" class="hidden min-h-screen pb-20">
+        
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xl">A</div>
+                <div>
+                    <h1 class="font-black text-lg leading-none">ADMIN PANEL</h1>
+                    <p class="text-[10px] font-bold text-green-600 uppercase tracking-wide">● System Online</p>
+                </div>
             </div>
-            <a href="index.html" target="_blank" class="text-xs font-bold text-blue-500 hover:underline">Open App <i class="fas fa-external-link-alt"></i></a>
+            <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-100 transition">LOGOUT</button>
         </header>
 
-        <div id="tab-orders">
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b">
-                        <tr><th class="p-4">ID</th><th class="p-4">Customer</th><th class="p-4">Total</th><th class="p-4">Status</th><th class="p-4 w-64">Action</th></tr>
-                    </thead>
-                    <tbody id="orderList" class="text-sm font-bold text-slate-700 divide-y divide-slate-100"></tbody>
-                </table>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6">
+            <div class="glass p-4 rounded-xl border-l-4 border-blue-500">
+                <p class="text-xs font-bold text-slate-400 uppercase">Total Orders</p>
+                <h2 class="text-2xl font-black text-slate-800" id="statOrders">0</h2>
+            </div>
+            <div class="glass p-4 rounded-xl border-l-4 border-green-500">
+                <p class="text-xs font-bold text-slate-400 uppercase">Revenue</p>
+                <h2 class="text-2xl font-black text-slate-800" id="statRev">₹0</h2>
+            </div>
+            <div class="glass p-4 rounded-xl border-l-4 border-orange-500">
+                <p class="text-xs font-bold text-slate-400 uppercase">Pending Req</p>
+                <h2 class="text-2xl font-black text-slate-800" id="statReq">0</h2>
+            </div>
+            <div class="glass p-4 rounded-xl border-l-4 border-purple-500">
+                <p class="text-xs font-bold text-slate-400 uppercase">Active Riders</p>
+                <h2 class="text-2xl font-black text-slate-800" id="statRiders">0</h2>
             </div>
         </div>
 
-        <div id="tab-riders" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
-                <h3 class="font-bold text-lg mb-4 text-orange-600">Add Rider</h3>
-                <div class="space-y-3">
-                    <input id="rName" placeholder="Rider Name" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
-                    <input id="rPhone" type="number" placeholder="Mobile (Login ID)" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
-                    <input id="rPass" type="text" placeholder="Password" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
-                    <button onclick="addRider()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800">CREATE ACCOUNT</button>
-                </div>
-            </div>
-            <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-                <h3 class="font-bold text-sm text-slate-500 uppercase mb-4">Active Riders</h3>
-                <div id="riderList" class="space-y-2"></div>
+        <div class="px-6 mb-6">
+            <div class="flex gap-2 overflow-x-auto hide-scroll pb-2">
+                <button onclick="switchTab('orders')" id="btn-orders" class="btn-active px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap shadow-sm transition">LIVE ORDERS</button>
+                <button onclick="switchTab('requests')" id="btn-requests" class="btn-inactive px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap border border-slate-200 transition">SHOP REQUESTS</button>
+                <button onclick="switchTab('shops')" id="btn-shops" class="btn-inactive px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap border border-slate-200 transition">MANAGE SHOPS</button>
+                <button onclick="switchTab('riders')" id="btn-riders" class="btn-inactive px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap border border-slate-200 transition">MANAGE RIDERS</button>
             </div>
         </div>
 
-        <div id="tab-products" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
-                <h3 class="font-bold text-lg mb-4">Add Product</h3>
-                <input type="hidden" id="editId">
-                <div class="space-y-3">
-                    <input id="pName" placeholder="Product Name" class="w-full border p-2 rounded text-sm font-bold">
-                    <input id="pPrice" placeholder="Price (₹)" type="number" class="w-full border p-2 rounded text-sm font-bold">
-                    <select id="pCat" class="w-full border p-2 rounded text-sm font-bold"><option>Food</option><option>Fashion</option><option>Mobile</option></select>
-                    <input id="pImg" placeholder="Image URL" class="w-full border p-2 rounded text-sm font-bold">
-                    <button onclick="saveProd()" class="w-full bg-blue-600 text-white py-2 rounded font-bold">SAVE</button>
+        <div id="view-orders" class="px-6">
+            <div class="glass rounded-2xl overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-sm uppercase">Order Monitor</h3>
+                    <button onclick="renderOrders()" class="text-slate-400 hover:text-slate-800"><i class="fas fa-sync-alt"></i></button>
                 </div>
+                <div id="ordersContainer" class="divide-y divide-slate-100">
+                    </div>
             </div>
-            <div class="md:col-span-2 grid grid-cols-2 gap-4" id="prodList"></div>
         </div>
+
+        <div id="view-requests" class="px-6 hidden">
+            <h3 class="font-bold text-lg mb-4">Pending Approvals</h3>
+            <div id="requestsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+        </div>
+
+        <div id="view-shops" class="px-6 hidden">
+            <div class="glass p-6 rounded-2xl mb-6">
+                <h3 class="font-bold text-sm mb-4 uppercase text-orange-600">Register New Shop Manually</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="newShopName" placeholder="Shop Name" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="newShopOwner" placeholder="Owner Name" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="newShopPhone" type="number" placeholder="Mobile (Login ID)" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="newShopPass" placeholder="Create Password" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="newShopLoc" placeholder="Location/Address" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold md:col-span-2">
+                </div>
+                <button onclick="manualAddShop()" class="mt-4 bg-slate-900 text-white px-6 py-3 rounded-lg text-xs font-bold w-full md:w-auto">ADD SHOP</button>
+            </div>
+            <div id="activeShopsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+        </div>
+
+        <div id="view-riders" class="px-6 hidden">
+            <div class="glass p-6 rounded-2xl mb-6">
+                <h3 class="font-bold text-sm mb-4 uppercase text-blue-600">Register New Rider</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input id="riderName" placeholder="Rider Name" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="riderPhone" type="number" placeholder="Mobile (Login ID)" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                    <input id="riderPass" placeholder="Password" class="bg-slate-50 border p-3 rounded-lg text-xs font-bold">
+                </div>
+                <button onclick="addRider()" class="mt-4 bg-slate-900 text-white px-6 py-3 rounded-lg text-xs font-bold w-full">ADD RIDER</button>
+            </div>
+            <div id="activeRidersContainer" class="space-y-2"></div>
+        </div>
+
     </div>
 
     <script>
-        // --- AUTH ---
-        function login() {
-            const pin = document.getElementById('pin').value;
-            // PASSWORD CHANGED HERE
-            if(pin === 'PASSWORD123') { 
-                document.getElementById('login').classList.add('hidden'); 
-                document.getElementById('dash').classList.remove('hidden'); 
-                refreshAll(); 
-            } else { 
-                document.getElementById('errorMsg').style.opacity = 1; 
-            } 
+        // --- 1. AUTHENTICATION ---
+        function authAdmin() {
+            const pin = document.getElementById('adminPass').value;
+            if (pin === 'PASSWORD123') { // Hidden Password
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                refreshAll();
+            } else {
+                const err = document.getElementById('loginErr');
+                err.style.opacity = 1;
+            }
         }
+        function logout() { location.reload(); }
 
-        // --- NAVIGATION ---
-        function view(tab){
-            ['orders','products','riders'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
-            document.getElementById('tab-'+tab).classList.remove('hidden');
-            ['btn-orders','btn-products','btn-riders'].forEach(b => document.getElementById(b).className = "px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500");
-            document.getElementById('btn-'+tab).className = "px-4 py-2 rounded-lg font-bold text-xs transition bg-white shadow text-blue-600";
+        // --- 2. NAVIGATION & TABS ---
+        function switchTab(tabId) {
+            ['orders', 'requests', 'shops', 'riders'].forEach(t => {
+                document.getElementById('view-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "btn-inactive px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap border border-slate-200 transition";
+            });
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).className = "btn-active px-6 py-3 rounded-xl font-bold text-xs whitespace-nowrap shadow-sm transition";
             refreshAll();
         }
-        function refreshAll() { renderOrders(); renderRiders(); renderProds(); }
 
-        // --- RIDERS ---
-        function getRiders() { return JSON.parse(localStorage.getItem('f_riders')) || []; }
-        function addRider() {
-            let name = document.getElementById('rName').value, phone = document.getElementById('rPhone').value, pass = document.getElementById('rPass').value;
-            if(!name || !phone || !pass) return alert("Fill details");
-            let riders = getRiders(); 
-            if(riders.find(r=>r.phone==phone)) return alert("Rider already exists");
-            riders.push({ id: Date.now(), name, phone, pass });
-            localStorage.setItem('f_riders', JSON.stringify(riders));
-            renderRiders(); alert("Rider Added!");
-            document.getElementById('rName').value=""; document.getElementById('rPhone').value=""; document.getElementById('rPass').value="";
+        function refreshAll() {
+            renderOrders();
+            renderRequests();
+            renderShops();
+            renderRiders();
+            updateStats();
         }
-        function renderRiders() { document.getElementById('riderList').innerHTML = getRiders().map(r => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border"><div><p class="font-bold">${r.name}</p><p class="text-xs text-slate-400">ID: ${r.phone} | Pass: ${r.pass}</p></div><button onclick="delRider(${r.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`).join(''); }
-        function delRider(id) { if(confirm("Delete Rider?")) { localStorage.setItem('f_riders', JSON.stringify(getRiders().filter(r=>r.id!==id))); renderRiders(); } }
 
-        // --- ORDERS ---
+        // --- 3. ORDERS LOGIC (The Core) ---
         function renderOrders() {
-            let orders = JSON.parse(localStorage.getItem('f_orders')) || [];
-            let riders = getRiders();
-            const list = document.getElementById('orderList');
-            if(!orders.length) { list.innerHTML="<tr><td colspan='5' class='p-8 text-center text-slate-400'>No Orders</td></tr>"; return; }
+            const orders = JSON.parse(localStorage.getItem('f_orders')) || [];
+            const riders = JSON.parse(localStorage.getItem('f_riders')) || [];
+            const shops = JSON.parse(localStorage.getItem('f_shops')) || [];
+            const container = document.getElementById('ordersContainer');
 
-            list.innerHTML = orders.map((o,i) => {
-                let actionHTML = "";
-                if(o.status === 'Pending') actionHTML = `<button onclick="setStatus('${o.id}', 'Accepted')" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-xs font-bold w-full">Accept</button>`;
-                else if(o.status === 'Accepted') {
-                    let options = riders.map(r => `<option value="${r.phone}">${r.name}</option>`).join('');
-                    actionHTML = riders.length ? `<div class="flex gap-2"><select id="assign-${o.id}" class="bg-slate-50 border rounded w-full text-xs font-bold"><option value="">Select Rider</option>${options}</select><button onclick="assignRider('${o.id}')" class="bg-orange-500 text-white px-3 rounded"><i class="fas fa-paper-plane"></i></button></div>` : `<span class="text-red-500 text-xs font-bold">Add Rider First</span>`;
-                } 
-                else actionHTML = `<span class="bg-green-50 text-green-600 px-2 py-1 rounded text-xs font-bold">${o.status} (${o.riderName||'Rider'})</span>`;
+            if (orders.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm font-bold">No Active Orders</div>`;
+                return;
+            }
+
+            container.innerHTML = orders.map((o, index) => {
+                const shop = shops.find(s => s.id == o.shopId);
+                const shopName = shop ? shop.shopName : 'Unknown Shop';
                 
-                return `<tr class="border-b"><td class="p-4 font-bold text-orange-600">#${o.id}</td><td class="p-4 font-bold text-sm">${o.customer.name}<br><span class="text-xs text-gray-400">${o.customer.addr}</span></td><td class="p-4 font-bold">₹${o.total}</td><td class="p-4 text-xs font-bold">${o.status}</td><td class="p-4">${actionHTML}<button onclick="delOrder('${o.id}')" class="text-red-300 text-[10px] block mt-1 hover:text-red-500">Delete</button></td></tr>`;
+                let statusBadge = '';
+                let actionArea = '';
+
+                // Logic based on Order Status
+                if (o.status === 'Pending') {
+                    statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-[10px] font-bold uppercase">Waiting for Shop</span>`;
+                    actionArea = `<p class="text-[10px] text-slate-400 italic">Shop needs to accept first</p>`;
+                } else if (o.status === 'Preparing') {
+                    statusBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase">Shop Preparing</span>`;
+                    actionArea = `<p class="text-[10px] text-slate-400 italic">Wait for food ready</p>`;
+                } else if (o.status === 'Accepted') { // "Accepted" means Food Ready in this flow logic
+                    statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase">Food Ready</span>`;
+                    
+                    // Rider Assignment Dropdown
+                    const riderOptions = riders.map(r => `<option value="${r.phone}">${r.name}</option>`).join('');
+                    actionArea = `
+                        <div class="flex items-center gap-2 mt-2">
+                            <select id="assign-${o.id}" class="bg-slate-50 border border-slate-300 text-xs font-bold rounded p-2 outline-none w-full">
+                                <option value="">Select Rider...</option>
+                                ${riderOptions}
+                            </select>
+                            <button onclick="assignRider('${o.id}')" class="bg-slate-900 text-white px-3 py-2 rounded text-xs font-bold hover:bg-slate-800">ASSIGN</button>
+                        </div>
+                    `;
+                } else if (o.status === 'Out for Delivery') {
+                    statusBadge = `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-[10px] font-bold uppercase">On The Way</span>`;
+                    actionArea = `<p class="text-[10px] font-bold text-slate-500"><i class="fas fa-motorcycle"></i> ${o.riderName}</p>`;
+                } else {
+                    statusBadge = `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[10px] font-bold uppercase">${o.status}</span>`;
+                    actionArea = `<button onclick="deleteOrder('${o.id}')" class="text-red-400 text-[10px] font-bold hover:text-red-600">DELETE RECORD</button>`;
+                }
+
+                return `
+                <div class="p-4 hover:bg-slate-50 transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-black text-slate-800 text-sm">#${o.id}</span>
+                            <span class="text-xs text-slate-500 font-medium ml-2">from <b>${shopName}</b></span>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-xs font-bold text-slate-700">${o.customer.name}</p>
+                            <p class="text-[10px] text-slate-400 max-w-[200px] truncate">${o.customer.addr}</p>
+                            <p class="text-xs font-black text-slate-800 mt-1">₹${o.total}</p>
+                        </div>
+                        <div class="w-1/2 text-right">
+                            ${actionArea}
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
         }
-        function setStatus(oid, s) { let o = JSON.parse(localStorage.getItem('f_orders')); o.find(x=>x.id===oid).status=s; localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); }
-        function assignRider(oid) {
-            let phone = document.getElementById(`assign-${oid}`).value; if(!phone) return alert("Select Rider");
-            let riders = getRiders(); let r = riders.find(x=>x.phone==phone);
-            let orders = JSON.parse(localStorage.getItem('f_orders')); let idx = orders.findIndex(x=>x.id===oid);
-            orders[idx].status = 'Out for Delivery'; orders[idx].riderPhone = r.phone; orders[idx].riderName = r.name;
-            localStorage.setItem('f_orders', JSON.stringify(orders)); renderOrders(); alert("Assigned to " + r.name);
+
+        function assignRider(orderId) {
+            const select = document.getElementById(`assign-${orderId}`);
+            const riderPhone = select.value;
+            
+            if(!riderPhone) return alert("Please select a rider!");
+
+            const riders = JSON.parse(localStorage.getItem('f_riders'));
+            const rider = riders.find(r => r.phone === riderPhone);
+            
+            let orders = JSON.parse(localStorage.getItem('f_orders'));
+            let orderIdx = orders.findIndex(o => o.id === orderId);
+            
+            if(orderIdx !== -1) {
+                orders[orderIdx].status = 'Out for Delivery';
+                orders[orderIdx].riderPhone = rider.phone;
+                orders[idx].riderName = rider.name;
+                localStorage.setItem('f_orders', JSON.stringify(orders));
+                renderOrders();
+                alert(`Order assigned to ${rider.name}`);
+            }
         }
-        function delOrder(oid){ if(confirm("Delete Order?")){ localStorage.setItem('f_orders', JSON.stringify(JSON.parse(localStorage.getItem('f_orders')).filter(x=>x.id!==oid))); renderOrders(); }}
-        
-        // --- PRODUCTS ---
-        function saveProd() {
-            let p = {id:document.getElementById('editId').value||Date.now(), name:document.getElementById('pName').value, price:document.getElementById('pPrice').value, cat:document.getElementById('pCat').value, img:document.getElementById('pImg').value};
-            if(!p.name) return alert("Enter Name");
-            let prods = JSON.parse(localStorage.getItem('f_products'))||[];
-            if(document.getElementById('editId').value) prods[prods.findIndex(x=>x.id==p.id)]=p; else prods.unshift(p);
-            localStorage.setItem('f_products', JSON.stringify(prods)); 
-            document.getElementById('pName').value=""; document.getElementById('pPrice').value=""; document.getElementById('pImg').value="";
-            renderProds();
+
+        function deleteOrder(oid) {
+            if(confirm("Permanently delete this order?")) {
+                let orders = JSON.parse(localStorage.getItem('f_orders')).filter(o => o.id !== oid);
+                localStorage.setItem('f_orders', JSON.stringify(orders));
+                renderOrders();
+            }
         }
-        function renderProds(){ document.getElementById('prodList').innerHTML = (JSON.parse(localStorage.getItem('f_products'))||[]).map(p=>`<div class="bg-white p-3 rounded shadow flex justify-between items-center"><img src="${p.img}" class="w-10 h-10 rounded object-cover"><div><p class="font-bold text-sm">${p.name}</p><p class="text-xs text-orange-600 font-bold">₹${p.price}</p></div><button onclick="delP(${p.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`).join(''); }
-        function delP(id){ if(confirm("Delete?")){ localStorage.setItem('f_products', JSON.stringify(JSON.parse(localStorage.getItem('f_products')).filter(p=>p.id!=id))); renderProds(); }}
-        
-        refreshAll();
+
+        // --- 4. REQUESTS LOGIC ---
+        function renderRequests() {
+            const reqs = JSON.parse(localStorage.getItem('f_shop_requests')) || [];
+            const container = document.getElementById('requestsContainer');
+            
+            document.getElementById('statReq').innerText = reqs.length;
+
+            if (reqs.length === 0) {
+                container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 text-sm font-bold">No Pending Requests</div>`;
+                return;
+            }
+
+            container.innerHTML = reqs.map((r, i) => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-black text-slate-800">${r.shopName}</h4>
+                        <span class="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold">NEW</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-bold mb-1"><i class="fas fa-user"></i> ${r.owner} | <i class="fas fa-phone"></i> ${r.phone}</p>
+                    <p class="text-[10px] text-slate-400 mb-3 bg-slate-50 p-2 rounded">${r.bio || 'No bio provided'}</p>
+                    <p class="text-[10px] text-slate-400 mb-2"><i class="fas fa-map-marker-alt"></i> ${r.location}</p>
+                    
+                    <div class="mt-3 pt-3 border-t border-slate-100">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Set Shop Password</label>
+                        <div class="flex gap-2 mt-1">
+                            <input id="pass-${i}" type="text" placeholder="Create Pass" class="bg-slate-50 border p-2 rounded-lg text-xs font-bold w-full outline-none">
+                            <button onclick="approveShop(${i})" class="bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-700">APPROVE</button>
+                            <button onclick="rejectShop(${i})" class="bg-red-50 text-red-500 px-3 py-2 rounded-lg text-xs font-bold hover:bg-red-100">X</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveShop(index) {
+            let reqs = JSON.parse(localStorage.getItem('f_shop_requests'));
+            let password = document.getElementById(`pass-${index}`).value;
+
+            if(!password) return alert("You must create a password for the shop!");
+
+            let shops = JSON.parse(localStorage.getItem('f_shops')) || [];
+            
+            // Create Shop Object
+            let newShop = {
+                id: Date.now(),
+                shopName: reqs[index].shopName,
+                owner: reqs[index].owner,
+                phone: reqs[index].phone,
+                location: reqs[index].location,
+                pass: password, // Admin generated
+                status: 'Active'
+            };
+
+            shops.push(newShop);
+            reqs.splice(index, 1); // Remove from requests
+
+            localStorage.setItem('f_shops', JSON.stringify(shops));
+            localStorage.setItem('f_shop_requests', JSON.stringify(reqs));
+            
+            refreshAll();
+            alert(`Shop "${newShop.shopName}" Approved! Password: ${password}`);
+        }
+
+        function rejectShop(index) {
+            if(confirm("Reject this shop application?")) {
+                let reqs = JSON.parse(localStorage.getItem('f_shop_requests'));
+                reqs.splice(index, 1);
+                localStorage.setItem('f_shop_requests', JSON.stringify(reqs));
+                renderRequests();
+            }
+        }
+
+        // --- 5. SHOPS & RIDERS CRUD ---
+        function renderShops() {
+            const shops = JSON.parse(localStorage.getItem('f_shops')) || [];
+            document.getElementById('activeShopsContainer').innerHTML = shops.map(s => `
+                <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group">
+                    <h4 class="font-bold text-slate-800 text-sm">${s.shopName}</h4>
+                    <p class="text-xs text-slate-500 mt-1">ID: ${s.phone}</p>
+                    <p class="text-xs text-slate-500">Pass: <span class="font-mono bg-slate-100 px-1 rounded">${s.pass}</span></p>
+                    <button onclick="deleteShop(${s.id})" class="absolute top-3 right-3 text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function manualAddShop() {
+            let name = document.getElementById('newShopName').value;
+            let owner = document.getElementById('newShopOwner').value;
+            let phone = document.getElementById('newShopPhone').value;
+            let pass = document.getElementById('newShopPass').value;
+            let loc = document.getElementById('newShopLoc').value;
+
+            if(!name || !phone || !pass) return alert("Fill Name, Phone, Password");
+
+            let shops = JSON.parse(localStorage.getItem('f_shops')) || [];
+            if(shops.find(s=>s.phone == phone)) return alert("Phone already used");
+
+            shops.push({ id: Date.now(), shopName: name, owner, phone, location: loc, pass });
+            localStorage.setItem('f_shops', JSON.stringify(shops));
+            refreshAll();
+            alert("Shop Added Manually");
+            
+            // Clear inputs
+            ['newShopName','newShopOwner','newShopPhone','newShopPass','newShopLoc'].forEach(id=>document.getElementById(id).value='');
+        }
+
+        function deleteShop(id) {
+            if(confirm("Delete this shop and all its data?")) {
+                let shops = JSON.parse(localStorage.getItem('f_shops')).filter(s => s.id !== id);
+                localStorage.setItem('f_shops', JSON.stringify(shops));
+                renderShops();
+            }
+        }
+
+        function renderRiders() {
+            const riders = JSON.parse(localStorage.getItem('f_riders')) || [];
+            document.getElementById('statRiders').innerText = riders.length;
+            document.getElementById('activeRidersContainer').innerHTML = riders.map(r => `
+                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-sm text-slate-800">${r.name}</p>
+                        <p class="text-xs text-slate-500">Mob: ${r.phone} | Pass: ${r.pass}</p>
+                    </div>
+                    <button onclick="deleteRider(${r.id})" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function addRider() {
+            let name = document.getElementById('riderName').value;
+            let phone = document.getElementById('riderPhone').value;
+            let pass = document.getElementById('riderPass').value;
+
+            if(!name || !phone || !pass) return alert("Fill all fields");
+
+            let riders = JSON.parse(localStorage.getItem('f_riders')) || [];
+            if(riders.find(r=>r.phone == phone)) return alert("Rider exists");
+
+            riders.push({id: Date.now(), name, phone, pass});
+            localStorage.setItem('f_riders', JSON.stringify(riders));
+            refreshAll();
+            
+            document.getElementById('riderName').value = '';
+            document.getElementById('riderPhone').value = '';
+            document.getElementById('riderPass').value = '';
+        }
+
+        function deleteRider(id) {
+            if(confirm("Remove rider?")) {
+                let riders = JSON.parse(localStorage.getItem('f_riders')).filter(r => r.id !== id);
+                localStorage.setItem('f_riders', JSON.stringify(riders));
+                renderRiders();
+            }
+        }
+
+        function updateStats() {
+            const orders = JSON.parse(localStorage.getItem('f_orders')) || [];
+            document.getElementById('statOrders').innerText = orders.length;
+            document.getElementById('statRev').innerText = '₹' + orders.reduce((sum, o) => sum + parseInt(o.total || 0), 0);
+        }
+
+        // Auto Refresh
+        setInterval(renderOrders, 5000); // Live Orders refresh every 5s
+        setInterval(renderRequests, 10000); // Check requests every 10s
+
     </script>
 </body>
 </html>
