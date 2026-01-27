@@ -3,134 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F-store Admin</title>
+    <title>F-Store Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { font-family: sans-serif; background: #f8fafc; }</style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans">
+<body class="text-slate-800">
 
     <div id="login" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl w-full max-w-xs text-center shadow-2xl">
-            <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-lock text-2xl text-orange-600"></i></div>
-            <h2 class="text-xl font-black mb-4 uppercase">Admin Panel</h2>
-            <input type="password" id="pin" placeholder="Enter PIN (1234)" class="w-full bg-slate-100 p-3 rounded-lg text-center font-bold text-lg mb-4 outline-none border focus:border-orange-500">
-            <button onclick="login()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800">LOGIN</button>
+        <div class="bg-white p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-lock text-2xl text-orange-600"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-4 uppercase">Admin Panel</h2>
+            
+            <input type="password" id="pin" placeholder="Enter Password" 
+                class="w-full bg-slate-50 border p-3 rounded-lg text-center font-bold text-lg mb-4 outline-none focus:border-orange-500 transition">
+            
+            <button onclick="login()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg">LOGIN</button>
+            <p id="errorMsg" class="text-red-500 text-xs font-bold mt-3 opacity-0">Incorrect Password</p>
         </div>
     </div>
 
-    <div id="dash" class="hidden min-h-screen p-6 max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm">
-            <h1 class="text-2xl font-black italic text-slate-800">F-store <span class="text-orange-600">Admin</span></h1>
-            <div class="flex gap-2">
-                <button onclick="view('orders')" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-blue-100">ORDERS</button>
-                <button onclick="view('products')" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-orange-100">PRODUCTS</button>
-                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-slate-200">APP VIEW</a>
+    <div id="dash" class="hidden min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 gap-4">
+            <h1 class="text-2xl font-black italic text-slate-800">F-Store <span class="text-orange-600">Admin</span></h1>
+            <div class="flex gap-2 bg-slate-100 p-1 rounded-xl">
+                <button onclick="view('orders')" id="btn-orders" class="px-4 py-2 rounded-lg font-bold text-xs transition bg-white shadow text-blue-600">ORDERS</button>
+                <button onclick="view('products')" id="btn-products" class="px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500">PRODUCTS</button>
+                <button onclick="view('riders')" id="btn-riders" class="px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500">RIDERS</button>
             </div>
+            <a href="index.html" target="_blank" class="text-xs font-bold text-blue-500 hover:underline">Open App <i class="fas fa-external-link-alt"></i></a>
         </header>
-
-        <div id="tab-products" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm h-fit sticky top-4">
-                <h3 class="font-bold text-lg mb-4">Manage Product</h3>
-                <input type="hidden" id="editId">
-                <div class="space-y-3">
-                    <input id="pName" placeholder="Product Name" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
-                    <input id="pPrice" placeholder="Price (₹)" type="number" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
-                    <select id="pCat" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold bg-white"><option>Food</option><option>Fashion</option><option>Mobile</option></select>
-                    <input id="pImg" placeholder="Image URL" class="w-full border border-slate-200 p-2.5 rounded-lg text-sm font-bold">
-                    <button onclick="saveProd()" class="w-full bg-orange-600 text-white py-2.5 rounded-lg font-bold hover:bg-orange-700 transition">SAVE PRODUCT</button>
-                </div>
-            </div>
-            <div class="md:col-span-2 grid grid-cols-2 gap-4" id="prodList"></div>
-        </div>
 
         <div id="tab-orders">
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b">
-                        <tr><th class="p-4">ID</th><th class="p-4">Customer</th><th class="p-4">Total</th><th class="p-4">Status</th><th class="p-4">Actions</th></tr>
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b">
+                        <tr><th class="p-4">ID</th><th class="p-4">Customer</th><th class="p-4">Total</th><th class="p-4">Status</th><th class="p-4 w-64">Action</th></tr>
                     </thead>
                     <tbody id="orderList" class="text-sm font-bold text-slate-700 divide-y divide-slate-100"></tbody>
                 </table>
             </div>
         </div>
+
+        <div id="tab-riders" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h3 class="font-bold text-lg mb-4 text-orange-600">Add Rider</h3>
+                <div class="space-y-3">
+                    <input id="rName" placeholder="Rider Name" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
+                    <input id="rPhone" type="number" placeholder="Mobile (Login ID)" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
+                    <input id="rPass" type="text" placeholder="Password" class="w-full bg-slate-50 border p-3 rounded-lg text-sm font-bold outline-none focus:border-orange-500">
+                    <button onclick="addRider()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800">CREATE ACCOUNT</button>
+                </div>
+            </div>
+            <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                <h3 class="font-bold text-sm text-slate-500 uppercase mb-4">Active Riders</h3>
+                <div id="riderList" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <div id="tab-products" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h3 class="font-bold text-lg mb-4">Add Product</h3>
+                <input type="hidden" id="editId">
+                <div class="space-y-3">
+                    <input id="pName" placeholder="Product Name" class="w-full border p-2 rounded text-sm font-bold">
+                    <input id="pPrice" placeholder="Price (₹)" type="number" class="w-full border p-2 rounded text-sm font-bold">
+                    <select id="pCat" class="w-full border p-2 rounded text-sm font-bold"><option>Food</option><option>Fashion</option><option>Mobile</option></select>
+                    <input id="pImg" placeholder="Image URL" class="w-full border p-2 rounded text-sm font-bold">
+                    <button onclick="saveProd()" class="w-full bg-blue-600 text-white py-2 rounded font-bold">SAVE</button>
+                </div>
+            </div>
+            <div class="md:col-span-2 grid grid-cols-2 gap-4" id="prodList"></div>
+        </div>
     </div>
 
     <script>
-        function login(){ 
-            if(document.getElementById('pin').value==='1234'){ 
+        // --- AUTH ---
+        function login() {
+            const pin = document.getElementById('pin').value;
+            // PASSWORD CHANGED HERE
+            if(pin === 'PASSWORD123') { 
                 document.getElementById('login').classList.add('hidden'); 
                 document.getElementById('dash').classList.remove('hidden'); 
-                renderOrders();
-            } else alert("Wrong PIN"); 
-        }
-        function view(t){ 
-            document.getElementById('tab-orders').classList.add('hidden'); 
-            document.getElementById('tab-products').classList.add('hidden'); 
-            document.getElementById('tab-'+t).classList.remove('hidden'); 
-            if(t==='products') renderProds(); else renderOrders();
+                refreshAll(); 
+            } else { 
+                document.getElementById('errorMsg').style.opacity = 1; 
+            } 
         }
 
-        // --- PRODUCTS ---
-        function renderProds() {
-            let prods = JSON.parse(localStorage.getItem('f_products')) || [];
-            document.getElementById('prodList').innerHTML = prods.map(p => `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 relative group hover:shadow-md transition">
-                    <img src="${p.img}" class="h-24 w-full object-cover rounded-lg mb-2 bg-slate-50">
-                    <div class="font-bold text-sm text-slate-800 truncate">${p.name}</div>
-                    <div class="text-orange-600 font-bold text-xs">₹${p.price}</div>
-                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="editP(${p.id})" class="bg-white p-1.5 rounded shadow text-blue-500"><i class="fas fa-pen"></i></button>
-                        <button onclick="delP(${p.id})" class="bg-white p-1.5 rounded shadow text-red-500"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
+        // --- NAVIGATION ---
+        function view(tab){
+            ['orders','products','riders'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+            document.getElementById('tab-'+tab).classList.remove('hidden');
+            ['btn-orders','btn-products','btn-riders'].forEach(b => document.getElementById(b).className = "px-4 py-2 rounded-lg font-bold text-xs transition text-slate-500");
+            document.getElementById('btn-'+tab).className = "px-4 py-2 rounded-lg font-bold text-xs transition bg-white shadow text-blue-600";
+            refreshAll();
         }
-        function saveProd() {
-            let id = document.getElementById('editId').value;
-            let name = document.getElementById('pName').value;
-            let price = document.getElementById('pPrice').value;
-            let cat = document.getElementById('pCat').value;
-            let img = document.getElementById('pImg').value;
-            if(!name) return alert("Enter Name");
+        function refreshAll() { renderOrders(); renderRiders(); renderProds(); }
 
-            let prods = JSON.parse(localStorage.getItem('f_products')) || [];
-            if(id) {
-                let idx = prods.findIndex(p=>p.id==id);
-                prods[idx] = {id: parseInt(id), name, price:parseInt(price), cat, img};
-            } else {
-                prods.unshift({id: Date.now(), name, price:parseInt(price), cat, img});
-            }
-            localStorage.setItem('f_products', JSON.stringify(prods));
-            document.getElementById('editId').value = "";
-            renderProds();
+        // --- RIDERS ---
+        function getRiders() { return JSON.parse(localStorage.getItem('f_riders')) || []; }
+        function addRider() {
+            let name = document.getElementById('rName').value, phone = document.getElementById('rPhone').value, pass = document.getElementById('rPass').value;
+            if(!name || !phone || !pass) return alert("Fill details");
+            let riders = getRiders(); 
+            if(riders.find(r=>r.phone==phone)) return alert("Rider already exists");
+            riders.push({ id: Date.now(), name, phone, pass });
+            localStorage.setItem('f_riders', JSON.stringify(riders));
+            renderRiders(); alert("Rider Added!");
+            document.getElementById('rName').value=""; document.getElementById('rPhone').value=""; document.getElementById('rPass').value="";
         }
-        function delP(id){ if(confirm("Delete?")){ let p = JSON.parse(localStorage.getItem('f_products')).filter(x=>x.id!==id); localStorage.setItem('f_products', JSON.stringify(p)); renderProds(); } }
-        function editP(id){ let p = JSON.parse(localStorage.getItem('f_products')).find(x=>x.id===id); document.getElementById('editId').value=p.id; document.getElementById('pName').value=p.name; document.getElementById('pPrice').value=p.price; document.getElementById('pImg').value=p.img; }
+        function renderRiders() { document.getElementById('riderList').innerHTML = getRiders().map(r => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border"><div><p class="font-bold">${r.name}</p><p class="text-xs text-slate-400">ID: ${r.phone} | Pass: ${r.pass}</p></div><button onclick="delRider(${r.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`).join(''); }
+        function delRider(id) { if(confirm("Delete Rider?")) { localStorage.setItem('f_riders', JSON.stringify(getRiders().filter(r=>r.id!==id))); renderRiders(); } }
 
         // --- ORDERS ---
         function renderOrders() {
             let orders = JSON.parse(localStorage.getItem('f_orders')) || [];
-            document.getElementById('orderList').innerHTML = orders.map((o,i) => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4 text-orange-600">#${o.id}</td>
-                    <td class="p-4">
-                        <div class="font-bold text-slate-800">${o.customer.name}</div>
-                        <div class="text-xs text-slate-400">${o.payment}</div>
-                    </td>
-                    <td class="p-4">₹${o.total}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${o.status==='Pending'?'bg-yellow-100 text-yellow-700':o.status==='Delivered'?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700'}">${o.status}</span></td>
-                    <td class="p-4 flex gap-2">
-                        ${o.status==='Pending' ? `<button onclick="stats(${i},'Accepted')" class="text-blue-600 hover:underline text-xs">Accept</button>` : ''}
-                        ${o.status==='Accepted' ? `<button onclick="stats(${i},'Out for Delivery')" class="text-purple-600 hover:underline text-xs">Dispatch</button>` : ''}
-                        <button onclick="delO(${i})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+            let riders = getRiders();
+            const list = document.getElementById('orderList');
+            if(!orders.length) { list.innerHTML="<tr><td colspan='5' class='p-8 text-center text-slate-400'>No Orders</td></tr>"; return; }
+
+            list.innerHTML = orders.map((o,i) => {
+                let actionHTML = "";
+                if(o.status === 'Pending') actionHTML = `<button onclick="setStatus('${o.id}', 'Accepted')" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-xs font-bold w-full">Accept</button>`;
+                else if(o.status === 'Accepted') {
+                    let options = riders.map(r => `<option value="${r.phone}">${r.name}</option>`).join('');
+                    actionHTML = riders.length ? `<div class="flex gap-2"><select id="assign-${o.id}" class="bg-slate-50 border rounded w-full text-xs font-bold"><option value="">Select Rider</option>${options}</select><button onclick="assignRider('${o.id}')" class="bg-orange-500 text-white px-3 rounded"><i class="fas fa-paper-plane"></i></button></div>` : `<span class="text-red-500 text-xs font-bold">Add Rider First</span>`;
+                } 
+                else actionHTML = `<span class="bg-green-50 text-green-600 px-2 py-1 rounded text-xs font-bold">${o.status} (${o.riderName||'Rider'})</span>`;
+                
+                return `<tr class="border-b"><td class="p-4 font-bold text-orange-600">#${o.id}</td><td class="p-4 font-bold text-sm">${o.customer.name}<br><span class="text-xs text-gray-400">${o.customer.addr}</span></td><td class="p-4 font-bold">₹${o.total}</td><td class="p-4 text-xs font-bold">${o.status}</td><td class="p-4">${actionHTML}<button onclick="delOrder('${o.id}')" class="text-red-300 text-[10px] block mt-1 hover:text-red-500">Delete</button></td></tr>`;
+            }).join('');
         }
-        function stats(i,s){ let o = JSON.parse(localStorage.getItem('f_orders')); o[i].status=s; localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); }
-        function delO(i){ if(confirm("Delete Order?")){ let o = JSON.parse(localStorage.getItem('f_orders')); o.splice(i,1); localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); } }
+        function setStatus(oid, s) { let o = JSON.parse(localStorage.getItem('f_orders')); o.find(x=>x.id===oid).status=s; localStorage.setItem('f_orders', JSON.stringify(o)); renderOrders(); }
+        function assignRider(oid) {
+            let phone = document.getElementById(`assign-${oid}`).value; if(!phone) return alert("Select Rider");
+            let riders = getRiders(); let r = riders.find(x=>x.phone==phone);
+            let orders = JSON.parse(localStorage.getItem('f_orders')); let idx = orders.findIndex(x=>x.id===oid);
+            orders[idx].status = 'Out for Delivery'; orders[idx].riderPhone = r.phone; orders[idx].riderName = r.name;
+            localStorage.setItem('f_orders', JSON.stringify(orders)); renderOrders(); alert("Assigned to " + r.name);
+        }
+        function delOrder(oid){ if(confirm("Delete Order?")){ localStorage.setItem('f_orders', JSON.stringify(JSON.parse(localStorage.getItem('f_orders')).filter(x=>x.id!==oid))); renderOrders(); }}
         
-        setInterval(renderOrders, 5000);
+        // --- PRODUCTS ---
+        function saveProd() {
+            let p = {id:document.getElementById('editId').value||Date.now(), name:document.getElementById('pName').value, price:document.getElementById('pPrice').value, cat:document.getElementById('pCat').value, img:document.getElementById('pImg').value};
+            if(!p.name) return alert("Enter Name");
+            let prods = JSON.parse(localStorage.getItem('f_products'))||[];
+            if(document.getElementById('editId').value) prods[prods.findIndex(x=>x.id==p.id)]=p; else prods.unshift(p);
+            localStorage.setItem('f_products', JSON.stringify(prods)); 
+            document.getElementById('pName').value=""; document.getElementById('pPrice').value=""; document.getElementById('pImg').value="";
+            renderProds();
+        }
+        function renderProds(){ document.getElementById('prodList').innerHTML = (JSON.parse(localStorage.getItem('f_products'))||[]).map(p=>`<div class="bg-white p-3 rounded shadow flex justify-between items-center"><img src="${p.img}" class="w-10 h-10 rounded object-cover"><div><p class="font-bold text-sm">${p.name}</p><p class="text-xs text-orange-600 font-bold">₹${p.price}</p></div><button onclick="delP(${p.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>`).join(''); }
+        function delP(id){ if(confirm("Delete?")){ localStorage.setItem('f_products', JSON.stringify(JSON.parse(localStorage.getItem('f_products')).filter(p=>p.id!=id))); renderProds(); }}
+        
+        refreshAll();
     </script>
 </body>
 </html>
