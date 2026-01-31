@@ -3,460 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>F-Store | Super App</title>
-    <meta name="theme-color" content="#FF6B00">
+    <title>F-Store Premium</title>
+    
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ea580c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; padding-bottom: 110px; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Outfit', sans-serif; background-color: #f8fafc; padding-bottom: 120px; -webkit-tap-highlight-color: transparent; }
         .hide-scroll::-webkit-scrollbar { display: none; }
-        
-        /* Glass Header */
-        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        
-        /* Animations */
-        .slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .glass-header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .active-cat { background: #0f172a; color: white; transform: scale(1.05); box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2); }
+        .card-tap:active { transform: scale(0.96); transition: transform 0.1s; }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Slider Fixes */
-        .snap-x { scroll-snap-type: x mandatory; }
-        .snap-center { scroll-snap-align: center; }
+        .ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
         
-        .cat-btn.active { background-color: #0f172a; color: white; border-color: #0f172a; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.3); transform: scale(1.05); }
-        .shop-card:active { transform: scale(0.98); }
+        /* Status Colors */
+        .st-Arrived { border-left: 4px solid #a855f7; background-color: #faf5ff; }
+        .st-Out { border-left: 4px solid #3b82f6; background-color: #eff6ff; }
+        .st-Ready { border-left: 4px solid #22c55e; background-color: #f0fdf4; }
     </style>
 </head>
-<body class="bg-slate-50 select-none">
+<body class="bg-slate-50 select-none text-slate-800">
 
-    <div id="userAuthModal" class="fixed inset-0 bg-slate-900 z-[9999] flex items-center justify-center p-6 hidden">
-        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl relative">
-            <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm">👋</div>
-            <h2 class="text-2xl font-black text-slate-800 mb-2">Welcome!</h2>
-            <p class="text-xs text-gray-400 mb-6 font-medium">Login to continue</p>
-            <input id="authName" placeholder="Your Full Name" class="w-full bg-slate-50 border p-4 rounded-xl font-bold mb-3 outline-none focus:border-orange-500">
-            <input id="authPhone" type="tel" placeholder="Mobile Number" class="w-full bg-slate-50 border p-4 rounded-xl font-bold mb-6 outline-none focus:border-orange-500">
-            <button onclick="saveUser()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition">GET STARTED</button>
+    <div id="appLoader" class="fixed inset-0 bg-white z-[99999] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-24 h-24 bg-orange-600 rounded-[2rem] flex items-center justify-center shadow-2xl animate-bounce"><span class="text-5xl font-black text-white italic">F</span></div>
         </div>
     </div>
 
-    <div id="installPrompt" class="hidden fixed top-20 left-4 right-4 bg-slate-900 text-white p-4 rounded-xl shadow-2xl z-50 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="bg-orange-500 w-10 h-10 rounded-lg flex items-center justify-center font-bold italic">F</div>
-            <div><p class="font-bold text-sm">Install App</p><p class="text-[10px] text-gray-400">For better experience</p></div>
+    <div id="notifPanel" class="fixed inset-0 bg-slate-900/90 z-[999] hidden flex justify-end transition-opacity">
+        <div class="bg-white w-4/5 max-w-sm h-full shadow-2xl p-6 overflow-y-auto slide-up rounded-l-[2.5rem]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-slate-800">Notifications</h2>
+                <button onclick="closeNotif()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center hover:bg-slate-200"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="notifList" class="space-y-4"><p class="text-center text-gray-400 text-xs mt-10">No new notifications</p></div>
         </div>
-        <button onclick="installApp()" class="bg-white text-slate-900 px-4 py-2 rounded-lg text-xs font-bold">INSTALL</button>
-        <button onclick="document.getElementById('installPrompt').classList.add('hidden')" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">×</button>
     </div>
 
     <header class="glass-header sticky top-0 z-40 px-5 py-3 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2" onclick="location.reload()">
-            <div class="bg-gradient-to-br from-orange-500 to-red-600 text-white w-9 h-9 rounded-xl flex items-center justify-center font-black italic shadow-lg text-lg">F</div>
-            <div>
-                <h1 class="text-xl font-black italic tracking-tighter text-slate-900 leading-none">F-Store</h1>
-                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide" id="welcomeUser">Guest</p>
-            </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-orange-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black italic shadow-lg text-lg">F</div>
+            <div><h1 class="text-lg font-black italic tracking-tighter text-slate-900 leading-none">F-Store</h1><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="welcomeMsg">Guest</p></div>
         </div>
-        <div class="relative cursor-pointer group" onclick="openCart()">
-            <div class="w-10 h-10 bg-white border border-slate-200 text-slate-700 rounded-full flex items-center justify-center shadow-sm group-hover:text-orange-600 transition">
-                <i class="fas fa-shopping-basket text-lg"></i>
+        <div class="flex items-center gap-4">
+            <div class="relative cursor-pointer p-2" onclick="openNotif()">
+                <i id="bellIcon" class="fas fa-bell text-xl text-slate-600"></i>
+                <span id="notifDot" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white hidden"><span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 ping"></span></span>
             </div>
-            <span id="cartBadge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 border-white transform scale-0 transition-transform duration-300">0</span>
+            <div class="relative cursor-pointer card-tap" onclick="openCart()">
+                <div id="cartBtnBg" class="w-11 h-11 bg-white border border-slate-200 text-slate-600 rounded-full flex items-center justify-center shadow-sm"><i class="fas fa-shopping-basket text-lg"></i></div>
+                <span id="cartCount" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold border-2 border-white">0</span>
+            </div>
         </div>
     </header>
 
     <div id="view-home" class="animate-fade-in">
-        
-        <div class="px-4 pt-4">
-            <div class="relative group">
-                <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-orange-500 transition"></i>
-                <input id="searchInput" oninput="renderProducts()" placeholder="Search 'Pizza', 'Nike'..." class="w-full bg-white pl-12 pr-4 py-3 rounded-2xl text-sm font-bold shadow-sm border border-slate-100 outline-none focus:ring-2 focus:ring-orange-100 transition">
-            </div>
-        </div>
+        <div class="px-4 pt-4"><input id="search" placeholder="Search for food, items..." class="w-full bg-white pl-4 py-3.5 rounded-2xl shadow-sm border border-slate-100 font-bold outline-none text-sm focus:border-orange-500 transition"></div>
 
-        <div class="mt-6 pl-4">
-            <div class="flex overflow-x-auto snap-x snap-mandatory hide-scroll gap-4 pb-4 pr-4">
-                <div class="snap-center shrink-0 w-[85%] md:w-[45%] h-48 bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-center">
-                    <div class="relative z-10">
-                        <span class="bg-orange-500 px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-md">Free Delivery</span>
-                        <h2 class="text-3xl font-black italic mt-2 leading-none">SUPER<br>SALE</h2>
-                        <p class="text-xs text-gray-400 mt-2 font-medium">50% OFF on First Order</p>
-                    </div>
-                    <i class="fas fa-shipping-fast text-[8rem] text-white/5 absolute -right-6 -bottom-6 rotate-12"></i>
-                </div>
-                <div class="snap-center shrink-0 w-[85%] md:w-[45%] h-48 bg-gradient-to-r from-orange-500 to-red-600 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-center">
-                    <div class="relative z-10">
-                        <span class="bg-white text-orange-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-md">Fresh</span>
-                        <h2 class="text-3xl font-black italic mt-2 leading-none">TASTY<br>FOOD</h2>
-                        <p class="text-xs text-white/80 mt-2 font-medium">Top Rated Restaurants</p>
-                    </div>
-                    <i class="fas fa-hamburger text-[8rem] text-white/10 absolute -right-6 -bottom-6 rotate-12"></i>
-                </div>
-                 <div class="snap-center shrink-0 w-[85%] md:w-[45%] h-48 bg-blue-600 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-center">
-                    <div class="relative z-10">
-                        <span class="bg-white text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-md">Fashion</span>
-                        <h2 class="text-3xl font-black italic mt-2 leading-none">NEW<br>LOOK</h2>
-                        <p class="text-xs text-white/80 mt-2 font-medium">Trending Collections</p>
-                    </div>
-                    <i class="fas fa-tshirt text-[8rem] text-white/10 absolute -right-6 -bottom-6 rotate-12"></i>
+        <div class="mt-6 px-4">
+            <div class="w-full h-48 rounded-[2rem] bg-slate-900 overflow-hidden relative shadow-xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10"></div>
+                <img src="https://source.unsplash.com/random/800x400/?food" class="absolute inset-0 w-full h-full object-cover opacity-60">
+                <div class="absolute bottom-6 left-6 z-20">
+                    <span class="bg-orange-500 text-white px-2 py-1 rounded text-[10px] font-bold uppercase">Promo</span>
+                    <h2 class="text-3xl font-black text-white italic">Tasty<span class="text-orange-500">Deals</span></h2>
+                    <p class="text-white/80 text-xs">50% Off on first order</p>
                 </div>
             </div>
-        </div>
-
-        <div class="px-4 mt-2">
-            <h3 class="font-bold text-slate-800 text-lg mb-3">Popular Shops</h3>
-            <div id="shopsRail" class="flex gap-4 overflow-x-auto hide-scroll pb-2">
-                </div>
         </div>
 
         <div class="px-4 mt-4">
-            <h3 class="font-bold text-slate-800 text-lg mb-3">Explore Categories</h3>
-            <div class="flex gap-3 overflow-x-auto hide-scroll pb-2">
-                <button onclick="filterCat('All')" class="cat-btn active px-6 py-2.5 rounded-xl text-xs font-bold border border-transparent shadow-sm whitespace-nowrap transition-all">🔥 All</button>
-                <button onclick="filterCat('Food')" class="cat-btn bg-white text-slate-600 px-6 py-2.5 rounded-xl text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap transition-all">🍔 Food</button>
-                <button onclick="filterCat('Fashion')" class="cat-btn bg-white text-slate-600 px-6 py-2.5 rounded-xl text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap transition-all">👕 Fashion</button>
-                <button onclick="filterCat('Mobile')" class="cat-btn bg-white text-slate-600 px-6 py-2.5 rounded-xl text-xs font-bold border border-slate-200 shadow-sm whitespace-nowrap transition-all">🎧 Tech</button>
+            <div id="catRail" class="flex gap-3 overflow-x-auto hide-scroll pb-2">
+                <button onclick="filterCat('All')" id="cat-All" class="px-6 py-2.5 rounded-xl text-xs font-bold active-cat transition">🔥 All</button>
+                <button onclick="filterCat('Food')" id="cat-Food" class="bg-white border px-6 py-2.5 rounded-xl text-xs font-bold transition">🍔 Food</button>
+                <button onclick="filterCat('Fashion')" id="cat-Fashion" class="bg-white border px-6 py-2.5 rounded-xl text-xs font-bold transition">👕 Fashion</button>
+                <button onclick="filterCat('Mobile')" id="cat-Mobile" class="bg-white border px-6 py-2.5 rounded-xl text-xs font-bold transition">📱 Tech</button>
             </div>
         </div>
 
-        <div class="px-4 mt-2">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-bold text-slate-800 text-lg" id="gridTitle">All Products</h3>
+        <div class="px-4 mt-4">
+            <h3 class="font-bold text-slate-800 mb-3 text-lg">Shops</h3>
+            <div id="shopsRail" class="flex gap-4 overflow-x-auto hide-scroll pb-2"></div>
+        </div>
+
+        <div class="px-4 mt-4 pb-20">
+            <h3 class="font-bold text-slate-800 mb-3 text-lg" id="gridTitle">Recommended</h3>
+            <main id="productGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></main>
+        </div>
+        
+        <div class="mt-12 py-8 bg-white border-t border-slate-100 text-center rounded-t-[2.5rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
+            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center font-black italic mx-auto mb-4 text-xl">F</div>
+            <h4 class="font-black text-2xl italic text-slate-800 mb-2">F-Store</h4>
+            <div class="mb-8 border-b border-slate-100 pb-8 mx-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Partner Zone</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="admin.html" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-lg shadow-slate-200">Admin HQ</a>
+                    <a href="partner.html" class="px-5 py-2.5 bg-orange-50 text-orange-600 rounded-xl text-xs font-bold border border-orange-100">Shop Login</a>
+                    <a href="delivery.html" class="px-5 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold border border-blue-100">Rider App</a>
+                </div>
             </div>
-            <main id="productGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 pb-4">
-                </main>
+            <p class="text-[10px] text-slate-300 font-bold">© 2026 F-Store Inc.</p>
         </div>
     </div>
 
-    <div id="view-history" class="hidden px-4 pt-6 pb-20">
-        <h2 class="text-2xl font-black text-slate-800 mb-6">Your Orders</h2>
+    <div id="view-hist" class="hidden px-4 pt-6 pb-32">
+        <div class="flex justify-between items-end mb-6">
+            <h2 class="text-3xl font-black text-slate-800">My Orders</h2>
+            <div class="text-right"><p class="text-xs text-slate-400 font-bold uppercase">Total</p><p class="text-2xl font-black text-orange-600" id="totalOrdersCount">0</p></div>
+        </div>
         <div id="historyList" class="space-y-4"></div>
     </div>
 
-    <footer class="bg-white border-t border-slate-200 pt-10 pb-32 mt-8 rounded-t-[2.5rem]">
-        <div class="px-6 flex flex-col items-center text-center">
-            <h2 class="text-2xl font-black italic text-slate-300 mb-2">F-Store</h2>
-            <div class="flex gap-4 mb-8">
-                <a href="#" class="text-blue-600 text-xl"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-pink-600 text-xl"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-sky-500 text-xl"><i class="fab fa-twitter"></i></a>
-            </div>
-            <div class="w-full border-t border-slate-100 pt-6">
-                <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-4">Partner Login</p>
-                <div class="flex justify-center gap-3 flex-wrap">
-                    <a href="admin.html" class="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200">Admin</a>
-                    <a href="partner.html" class="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200">Shop</a>
-                    <a href="delivery.html" class="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200">Rider</a>
-                </div>
-                <button onclick="document.getElementById('shopReqModal').classList.remove('hidden')" class="mt-4 text-xs font-bold text-orange-600 hover:underline">Register Your Restaurant</button>
-            </div>
-            <p class="text-[10px] text-slate-300 font-bold mt-8">© 2026 F-Store Inc.</p>
-        </div>
-    </footer>
-
-    <div id="shopReqModal" class="fixed inset-0 bg-slate-900/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 relative">
-            <button onclick="document.getElementById('shopReqModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 font-bold">✕</button>
-            <h2 class="text-xl font-black mb-1 text-slate-800">Partner With Us</h2>
-            <p class="text-xs text-slate-400 mb-4">Join our network today</p>
-            
-            <input id="reqName" placeholder="Shop Name" class="w-full border p-3 rounded-lg mb-2 text-sm font-bold bg-slate-50 outline-none focus:border-orange-500">
-            <input id="reqOwner" placeholder="Owner Name" class="w-full border p-3 rounded-lg mb-2 text-sm font-bold bg-slate-50 outline-none focus:border-orange-500">
-            <input id="reqPhone" type="number" placeholder="Mobile Number" class="w-full border p-3 rounded-lg mb-2 text-sm font-bold bg-slate-50 outline-none focus:border-orange-500">
-            
-            <button onclick="getShopLocation()" id="shopLocBtn" class="w-full py-3 mb-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold flex items-center justify-center gap-2 border border-blue-100">
-                <i class="fas fa-map-marker-alt"></i> Detect Shop Location (GPS)
-            </button>
-            
-            <textarea id="reqBio" placeholder="Short Bio (e.g. Best Pizza)" class="w-full border p-3 rounded-lg mb-4 text-sm font-bold bg-slate-50 outline-none focus:border-orange-500"></textarea>
-            
-            <button onclick="submitShopReq()" class="w-full bg-slate-900 text-white py-3 rounded-lg font-bold hover:bg-slate-800 transition">SUBMIT REQUEST</button>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 w-full bg-white/95 backdrop-blur-xl border-t border-slate-100 px-6 py-2 flex justify-between items-center z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] pb-safe">
-        <button onclick="switchView('home')" class="text-orange-600 flex flex-col items-center gap-1 w-12 transition hover:scale-105">
-            <i class="fas fa-home text-xl"></i><span class="text-[10px] font-bold">Home</span>
-        </button>
-        <button onclick="switchView('history')" class="text-slate-400 hover:text-slate-800 flex flex-col items-center gap-1 w-12 transition hover:scale-105">
-            <i class="fas fa-history text-xl"></i><span class="text-[10px] font-bold">History</span>
-        </button>
-        <div class="relative -top-8">
-            <button onclick="openCart()" class="bg-gradient-to-r from-orange-600 to-red-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-orange-500/30 border-[4px] border-slate-50 transition hover:-translate-y-1 active:scale-95">
-                <i class="fas fa-shopping-basket text-xl"></i>
-            </button>
-        </div>
-        <button onclick="navigator.share({title:'F-Store', url:window.location.href})" class="text-slate-400 hover:text-slate-800 flex flex-col items-center gap-1 w-12 transition hover:scale-105">
-            <i class="fas fa-share-alt text-xl"></i><span class="text-[10px] font-bold">Share</span>
-        </button>
-        <button onclick="window.location.href='delivery.html'" class="text-slate-400 hover:text-orange-500 flex flex-col items-center gap-1 w-12 transition hover:scale-105">
-            <i class="fas fa-motorcycle text-xl"></i><span class="text-[10px] font-bold">Rider</span>
-        </button>
-    </div>
-
-    <div id="cartModal" class="fixed inset-0 bg-slate-900/80 hidden z-[60] flex items-end sm:items-center justify-center backdrop-blur-sm p-0 sm:p-4">
-        <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 max-h-[90vh] overflow-y-auto shadow-2xl relative slide-up">
+    <div id="cartModal" class="fixed inset-0 bg-slate-900/80 hidden z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 max-h-[90vh] overflow-y-auto slide-up shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-black text-slate-800 italic">Your Cart</h2>
-                <button onclick="closeCart()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200"><i class="fas fa-times text-slate-500"></i></button>
+                <h2 class="text-2xl font-black italic">Checkout</h2>
+                <button onclick="document.getElementById('cartModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
+            <div id="cartList" class="space-y-4 mb-6"></div>
             
-            <div id="cartList" class="space-y-3 mb-6"></div>
-            
-            <div class="space-y-4 border-t border-slate-100 pt-6">
-                <button onclick="getLocation()" id="locBtn" class="w-full py-3.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-blue-100 transition hover:bg-blue-100">
-                    <i class="fas fa-location-crosshairs text-lg animate-pulse"></i> Detect Location
-                </button>
-                <textarea id="cAddr" rows="2" placeholder="Full Address (House No, Area)" class="w-full bg-slate-50 p-3.5 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-orange-500 focus:bg-white transition"></textarea>
+            <div class="border-t pt-4 space-y-3">
+                <input id="orderName" placeholder="Your Name" class="w-full bg-slate-50 p-3 rounded-xl text-sm font-bold border outline-none focus:border-orange-500">
+                <input id="orderPhone" placeholder="Mobile Number" type="number" class="w-full bg-slate-50 p-3 rounded-xl text-sm font-bold border outline-none focus:border-orange-500">
+                <button onclick="window.getLocation()" id="locBtn" class="w-full py-3 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-blue-100 hover:bg-blue-100 transition"><i class="fas fa-location-crosshairs text-lg animate-pulse"></i> Detect Live Location (GPS)</button>
+                <textarea id="cAddr" placeholder="Full Address" class="w-full bg-slate-50 p-3 rounded-xl text-sm font-bold border outline-none focus:border-orange-500 h-20"></textarea>
                 
-                <div class="flex justify-between items-center pt-2">
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Pay</p>
-                        <p class="text-3xl font-black text-slate-800 tracking-tighter" id="finalTotal">₹0</p>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-3">Select Payment Method</p>
+                    
+                    <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer mb-2 hover:border-orange-500 transition">
+                        <input type="radio" name="payMode" value="COD" checked onclick="togglePay('COD')" class="accent-orange-600 w-5 h-5">
+                        <span class="font-bold text-sm">Cash on Delivery (COD)</span>
+                    </label>
+                    
+                    <label class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-orange-500 transition">
+                        <input type="radio" name="payMode" value="UPI" onclick="togglePay('UPI')" class="accent-orange-600 w-5 h-5">
+                        <span class="font-bold text-sm">UPI / QR Code</span>
+                    </label>
+
+                    <div id="upiSec" class="hidden mt-3 pt-3 border-t border-slate-200 animate-fade-in text-center">
+                        <div class="bg-white p-2 rounded-xl border border-slate-100 inline-block mb-2">
+                            <img id="upiQr" src="" class="w-40 h-40 object-contain mx-auto" alt="Scanning...">
+                        </div>
+                        <p class="text-[10px] font-bold text-slate-500 mb-1">Scan to Pay Exact Amount</p>
+                        <p class="font-bold text-xs text-blue-700 bg-blue-50 py-1 px-2 rounded inline-block mb-3">RISHABHSISODIYA1998@YBL</p>
+                        
+                        <input id="utrNo" placeholder="Enter UTR / Transaction ID (Required)" class="w-full bg-white p-3 rounded-xl text-sm font-bold border border-slate-300 outline-none focus:border-blue-500 text-center">
                     </div>
-                    <button onclick="placeOrder()" class="bg-slate-900 text-white px-8 py-3.5 rounded-xl font-black shadow-xl shadow-slate-900/20 active:scale-95 transition flex items-center gap-2">
-                        PLACE ORDER <i class="fas fa-arrow-right"></i>
-                    </button>
                 </div>
+
+                <button id="placeOrderBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black shadow-xl mt-2 flex justify-between px-6"><span>PLACE ORDER</span><span id="totalPrice">₹0</span></button>
             </div>
         </div>
     </div>
 
-    <div id="toast" class="fixed top-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full text-xs font-bold shadow-xl z-[80] opacity-0 transition-all pointer-events-none transform -translate-y-5 flex items-center gap-2 border border-slate-700">
-        <i class="fas fa-check-circle text-green-400"></i> <span id="toastMsg">Success</span>
+    <div id="authModal" class="fixed inset-0 bg-slate-900/90 z-[999] flex items-center justify-center p-6 hidden backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl slide-up">
+            <h2 class="text-3xl font-black text-slate-800 mb-2 mt-4">Welcome!</h2>
+            <input id="uName" placeholder="Your Name" class="w-full bg-slate-50 p-4 rounded-2xl font-bold mb-3 outline-none">
+            <input id="uPhone" type="tel" placeholder="Mobile Number" class="w-full bg-slate-50 p-4 rounded-2xl font-bold mb-6 outline-none">
+            <button id="saveUserBtn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">GET STARTED</button>
+        </div>
     </div>
 
-    <script>
-        // --- INIT & DATA ---
-        const defaultProds = [{id:1, shopId:99, name:"Veg Burger", price:99, cat:"Food", img:"https://source.unsplash.com/random/200x200/?burger"}, {id:2, shopId:99, name:"Nike Shoes", price:2499, cat:"Fashion", img:"https://source.unsplash.com/random/200x200/?shoes"}];
-        const defaultShops = [{id:99, shopName:"F-Store Official", owner:"Admin", phone:"1234567890", location:"Main Hub", pass:"admin"}];
-        
-        if(!localStorage.getItem('f_products')) localStorage.setItem('f_products', JSON.stringify(defaultProds));
-        if(!localStorage.getItem('f_shops')) localStorage.setItem('f_shops', JSON.stringify(defaultShops));
+    <div class="fixed bottom-0 w-full bg-white/95 backdrop-blur border-t border-slate-100 px-6 py-2 flex justify-between items-center z-40 pb-5 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.05)]">
+        <button onclick="view('home')" id="nav-home" class="text-orange-600 flex flex-col items-center gap-1"><i class="fas fa-home text-xl"></i><span class="text-[10px] font-bold">Home</span></button>
+        <button onclick="view('hist')" id="nav-hist" class="text-slate-400 flex flex-col items-center gap-1"><i class="fas fa-history text-xl"></i><span class="text-[10px] font-bold">Orders</span></button>
+        <div class="relative -top-8"><button onclick="openCart()" class="bg-slate-900 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-50 text-xl"><i class="fas fa-shopping-basket"></i></button></div>
+        <a href="partner.html" class="text-slate-400 flex flex-col items-center gap-1"><i class="fas fa-store text-xl"></i><span class="text-[10px] font-bold">Partner</span></a>
+        <a href="https://wa.me/918468966897" class="text-slate-400 flex flex-col items-center gap-1"><i class="fab fa-whatsapp text-xl"></i><span class="text-[10px] font-bold">Help</span></a>
+    </div>
 
-        let products = [], shops = [], cart = JSON.parse(localStorage.getItem('f_temp_cart')) || [];
-        let userInfo = JSON.parse(localStorage.getItem('f_user_info'));
-        let userLat = null, userLng = null;
-        let shopRegLat = null, shopRegLng = null; // New for shop registration
-        let currentFilterCat = 'All';
-        let currentFilterShop = null;
+    <div id="toast" class="fixed top-20 left-4 right-4 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[100] hidden slide-up flex items-center gap-4">
+        <div class="bg-orange-600 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fas fa-bell"></i></div>
+        <div><h4 class="font-bold text-sm" id="toastTitle">Notification</h4><p class="text-xs text-slate-300" id="toastMsg">Message</p></div>
+    </div>
 
-        // Check Login
-        if(!userInfo) document.getElementById('userAuthModal').classList.remove('hidden');
-        else document.getElementById('welcomeUser').innerText = `Hi, ${userInfo.name.split(' ')[0]}`;
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3"></audio>
 
-        function saveUser() {
-            let n = document.getElementById('authName').value, p = document.getElementById('authPhone').value;
-            if(!n || !p) return alert("Please fill details");
-            userInfo = {name:n, phone:p}; localStorage.setItem('f_user_info', JSON.stringify(userInfo));
-            document.getElementById('userAuthModal').classList.add('hidden'); location.reload();
+    <script>window.addEventListener('load', ()=>{ setTimeout(()=>{ document.getElementById('appLoader').style.display='none'; },2500); });</script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCwyzE9sdZZUU3dHUix23zEzFkGr2nNRyw", authDomain: "foodhub-8ae15.firebaseapp.com", projectId: "foodhub-8ae15", storageBucket: "foodhub-8ae15.firebasestorage.app", messagingSenderId: "274265160043", appId: "1:274265160043:web:81238fd424681e7f70342e" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.products = []; window.shops = []; window.cart = JSON.parse(localStorage.getItem('f_temp_cart')) || []; 
+        window.user = JSON.parse(localStorage.getItem('f_user')); 
+        window.userLat = null; window.userLng = null;
+        let filterShopId = null; let filterCatName = 'All';
+        let lastOrdersState = {}; 
+
+        if (!window.user) document.getElementById('authModal').classList.remove('hidden');
+        else document.getElementById('welcomeMsg').innerText = `Hi, ${window.user.name.split(' ')[0]}`;
+
+        document.getElementById('saveUserBtn').onclick = () => { let n = document.getElementById('uName').value, p = document.getElementById('uPhone').value; if (n && p) { localStorage.setItem('f_user', JSON.stringify({ name: n, phone: p })); location.reload(); }};
+
+        window.getLocation = () => {
+            let btn = document.getElementById('locBtn');
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Detecting...`;
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    window.userLat = p.coords.latitude; window.userLng = p.coords.longitude;
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Location Saved ✓`;
+                    btn.className = "w-full py-3 bg-green-50 text-green-600 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-green-200";
+                }, () => { alert("Allow GPS"); btn.innerHTML = "Retry GPS"; });
+            } else alert("GPS not supported");
         }
 
-        // --- RENDER LOGIC ---
-        function loadData() {
-            products = JSON.parse(localStorage.getItem('f_products')) || [];
-            shops = JSON.parse(localStorage.getItem('f_shops')) || [];
-            renderShops();
-            renderProducts();
-            updateBadge();
+        // --- DYNAMIC QR CODE LOGIC ---
+        window.togglePay = (mode) => {
+            if(mode === 'UPI') {
+                document.getElementById('upiSec').classList.remove('hidden');
+                
+                // Calculate Total
+                let total = window.cart.reduce((a, b) => a + b.price * b.qty, 0);
+                let upiId = "RISHABHSISODIYA1998@YBL";
+                
+                // UPI Link Format: upi://pay?pa=ID&pn=Name&am=Amount&cu=INR
+                let upiUrl = `upi://pay?pa=${upiId}&pn=F-Store&am=${total}&cu=INR`;
+                
+                // Generate QR using API
+                let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+                document.getElementById('upiQr').src = qrUrl;
+                
+            } else {
+                document.getElementById('upiSec').classList.add('hidden');
+            }
         }
 
-        function renderShops() {
-            const rail = document.getElementById('shopsRail');
-            rail.innerHTML = shops.map(s => `
-                <div onclick="filterShop(${s.id})" class="shop-card min-w-[100px] bg-white p-3 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-orange-500 transition text-center flex flex-col items-center gap-2">
-                    <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl">🏪</div>
-                    <p class="text-xs font-bold text-slate-700 leading-tight line-clamp-2">${s.shopName}</p>
-                </div>
-            `).join('') + `<div onclick="filterShop(null)" class="min-w-[80px] flex items-center justify-center text-xs font-bold text-orange-600 cursor-pointer">Show All</div>`;
+        onSnapshot(collection(db, "shops"), (snap) => { window.shops = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderShops(); });
+        onSnapshot(collection(db, "products"), (snap) => { window.products = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderProducts(); });
+
+        if(window.user) {
+            const q = query(collection(db, "orders"), where("customer.phone", "==", window.user.phone));
+            onSnapshot(q, (snap) => {
+                let myOrders = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+                checkStatusChanges(myOrders); 
+                renderHistory(myOrders); 
+            });
         }
+
+        function checkStatusChanges(orders) {
+            let notifListHTML = '';
+            let newNotifCount = 0;
+            orders.forEach(o => {
+                if (lastOrdersState[o.id] && lastOrdersState[o.id] !== o.status) {
+                    showToast(`Status: ${o.status}`, `Order #${o.id.substr(0,5)} updated`);
+                    document.getElementById('notifSound').play().catch(()=>{});
+                    newNotifCount++;
+                }
+                lastOrdersState[o.id] = o.status; 
+            });
+            if (newNotifCount > 0) document.getElementById('notifDot').classList.remove('hidden');
+        }
+
+        function showToast(title, msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 4000);
+        }
+
+        window.openNotif = () => { document.getElementById('notifPanel').classList.remove('hidden'); document.getElementById('notifDot').classList.add('hidden'); }
+        window.closeNotif = () => document.getElementById('notifPanel').classList.add('hidden');
+
+        function renderShops() { document.getElementById('shopsRail').innerHTML = window.shops.map(s => `<div onclick="window.filterShop('${s.id}')" class="min-w-[100px] bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center cursor-pointer card-tap"><div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">🏪</div><p class="text-xs font-bold text-slate-700 truncate">${s.shopName}</p></div>`).join('') + `<div onclick="window.filterShop(null)" class="min-w-[80px] flex items-center justify-center text-xs font-bold text-orange-600 cursor-pointer">View All</div>`; }
 
         function renderProducts() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const grid = document.getElementById('productGrid');
-            const title = document.getElementById('gridTitle');
+            let s = document.getElementById('search').value.toLowerCase();
+            let list = window.products.filter(p => (filterShopId ? p.shopId == filterShopId : true) && (filterCatName == 'All' || p.cat == filterCatName) && (p.name ? p.name.toLowerCase().includes(s) : true));
+            document.getElementById('productGrid').innerHTML = list.length ? list.map(p => {
+                let qty = window.cart.find(c => c.id == p.id)?.qty || 0;
+                let inStock = p.inStock !== false;
+                let overlay = inStock ? '' : '<div class="absolute inset-0 bg-white/70 backdrop-blur-sm z-10 flex items-center justify-center"><span class="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">OUT OF STOCK</span></div>';
+                let btnState = inStock ? '' : 'disabled style="opacity:0.5; pointer-events:none;"';
 
-            // Filtering
-            let list = products.filter(p => {
-                let matchCat = currentFilterCat === 'All' || p.cat === currentFilterCat;
-                let matchShop = currentFilterShop === null || p.shopId === currentFilterShop;
-                let matchSearch = p.name.toLowerCase().includes(search);
-                return matchCat && matchShop && matchSearch;
-            });
+                return `<div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col card-tap relative overflow-hidden group">
+                    ${overlay}
+                    <div class="h-32 bg-slate-50 rounded-xl mb-3 overflow-hidden"><img src="${p.img}" class="w-full h-full object-cover"></div>
+                    <p class="text-[9px] text-gray-400 uppercase font-bold truncate">${window.shops.find(x=>x.id==p.shopId)?.shopName||'Shop'}</p>
+                    <h3 class="font-bold text-sm text-slate-800 truncate mb-auto">${p.name}</h3>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-50">
+                        <span class="font-black text-orange-600 text-sm">₹${p.price}</span>
+                        ${qty == 0 ? `<button onclick="window.modQty('${p.id}',1)" class="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-xs" ${btnState}>+</button>` : `<div class="flex items-center bg-slate-100 rounded-lg p-1 gap-2" ${btnState}><button onclick="window.modQty('${p.id}',-1)" class="text-xs font-bold w-4">-</button><span class="text-xs font-bold">${qty}</span><button onclick="window.modQty('${p.id}',1)" class="text-xs font-bold w-4">+</button></div>`}
+                    </div></div>`;
+            }).join('') : '<p class="col-span-full text-center py-10 opacity-50">No items found</p>';
+            document.getElementById('cartCount').innerText = window.cart.reduce((a, b) => a + b.qty, 0);
+        }
 
-            // Update Title
-            if(currentFilterShop) {
-                let s = shops.find(x=>x.id===currentFilterShop);
-                title.innerText = s ? `${s.shopName} Menu` : "Shop Menu";
-            } else {
-                title.innerText = currentFilterCat === 'All' ? "All Products" : `${currentFilterCat} Items`;
-            }
+        function renderHistory(orders) {
+            document.getElementById('totalOrdersCount').innerText = orders.length;
+            document.getElementById('historyList').innerHTML = orders.map(x => {
+                let trackBtn = (x.status !== 'Delivered' && x.status !== 'Cancelled' && x.riderLat) ? `<a href="https://www.google.com/maps/search/?api=1&query=${x.riderLat},${x.riderLng}" target="_blank" class="block w-full text-center py-3 mt-3 bg-slate-900 text-white font-bold rounded-xl text-xs animate-pulse shadow-lg"><i class="fas fa-satellite-dish"></i> TRACK RIDER LIVE</a>` : '';
+                
+                let payInfo = x.paymentMethod === 'UPI' ? `<span class="text-blue-600">UPI (UTR: ${x.utr})</span>` : '<span class="text-slate-600">COD</span>';
+                let verifiedBadge = (x.paymentMethod === 'UPI' && x.paymentVerified) ? '<i class="fas fa-check-circle text-green-500"></i>' : '';
 
-            if(list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-10 opacity-50"><i class="fas fa-box-open text-4xl mb-2"></i><p>No items found</p></div>`;
-                return;
-            }
-
-            grid.innerHTML = list.map(p => {
-                let qty = cart.find(c=>c.id===p.id)?.qty || 0;
-                let sName = shops.find(s=>s.id==p.shopId)?.shopName || 'Unknown';
-                return `
-                <div class="prod-card bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-full group">
-                    <div class="h-32 rounded-xl overflow-hidden mb-2 relative bg-gray-50">
-                        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                        ${qty>0?`<span class="absolute top-2 right-2 bg-orange-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow">${qty}</span>`:''}
+                return `<div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-center mb-2"><span class="font-black text-slate-800">#${x.id.substr(0,5)}</span><span class="px-3 py-1 rounded-lg text-[10px] uppercase font-bold bg-slate-100 text-slate-500">${x.status}</span></div>
+                    <p class="text-xs text-gray-400 mb-3 flex items-center gap-1"><i class="far fa-clock"></i> ${x.date}</p>
+                    <div class="bg-slate-50 p-3 rounded-xl mb-3"><p class="text-xs font-bold text-slate-700">${x.items.map(i => `${i.qty}x ${i.name}`).join(', ')}</p></div>
+                    <div class="flex justify-between items-center border-t border-slate-100 pt-3">
+                        <div class="text-xs font-bold">${payInfo} ${verifiedBadge}</div>
+                        <span class="text-lg font-black text-slate-900">₹${x.total}</span>
                     </div>
-                    <div class="flex-1 flex flex-col">
-                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wide mb-0.5 truncate">${sName}</p>
-                        <h3 class="font-bold text-sm text-slate-800 line-clamp-1 leading-tight mb-2">${p.name}</h3>
-                        <div class="mt-auto flex justify-between items-center">
-                            <span class="text-orange-600 font-black">₹${p.price}</span>
-                            ${qty===0 ? 
-                                `<button onclick="modQty(${p.id},1)" class="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center hover:bg-orange-600 transition"><i class="fas fa-plus text-xs"></i></button>` : 
-                                `<div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg"><button onclick="modQty(${p.id},-1)" class="w-5 font-bold">-</button><span class="text-xs font-bold">${qty}</span><button onclick="modQty(${p.id},1)" class="w-5 font-bold">+</button></div>`
-                            }
-                        </div>
-                    </div>
+                    ${trackBtn}
                 </div>`;
             }).join('');
         }
 
-        // --- ACTIONS ---
-        function filterCat(c) { 
-            currentFilterCat = c; 
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                if(b.innerText.includes(c)) b.classList.add('active');
-                else b.classList.remove('active');
-            });
-            renderProducts(); 
-        }
-        function filterShop(sid) { currentFilterShop = sid; renderProducts(); }
-
-        function modQty(id, chg) {
-            let item = cart.find(c=>c.id===id);
-            if(item) { item.qty+=chg; if(item.qty<=0) cart=cart.filter(c=>c.id!==id); }
-            else if(chg>0) { let p=products.find(x=>x.id===id); cart.push({...p, qty:1}); }
-            localStorage.setItem('f_temp_cart', JSON.stringify(cart));
-            loadData();
-            if(chg>0) showToast("Item added");
-        }
-
-        function openCart() {
-            if(!cart.length) return showToast("Cart is empty");
-            let total = cart.reduce((a,b)=>a+(b.price*b.qty),0);
-            document.getElementById('cartList').innerHTML = cart.map(i => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 mb-2"><div class="flex items-center gap-3"><img src="${i.img}" class="w-10 h-10 rounded bg-white object-cover"><div><p class="font-bold text-xs">${i.name}</p><p class="text-[10px] text-slate-500">₹${i.price} x ${i.qty}</p></div></div><div class="flex gap-2 bg-white p-1 rounded border"><button onclick="modQty(${i.id},-1)" class="px-2 font-bold">-</button><span class="text-xs font-bold pt-1">${i.qty}</span><button onclick="modQty(${i.id},1)" class="px-2 font-bold">+</button></div></div>`).join('');
-            document.getElementById('finalTotal').innerText = `₹${total}`;
-            document.getElementById('cartModal').classList.remove('hidden');
-        }
-        function closeCart(){ document.getElementById('cartModal').classList.add('hidden'); }
-        function updateBadge(){ document.getElementById('cartBadge').innerText = cart.reduce((a,b)=>a+b.qty,0); document.getElementById('cartBadge').style.transform = cart.length?'scale(1)':'scale(0)'; }
-
-        // --- LOCATION DETECT FOR ORDER ---
-        function getLocation() {
-            document.getElementById('locBtn').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Detecting...`;
-            navigator.geolocation.getCurrentPosition(p => { userLat=p.coords.latitude; userLng=p.coords.longitude; document.getElementById('locBtn').innerHTML=`<i class="fas fa-check"></i> Location Saved`; document.getElementById('locBtn').className="w-full py-3.5 bg-green-50 text-green-600 rounded-xl text-xs font-bold border border-green-200"; }, 
-            () => { alert("Permission Denied"); document.getElementById('locBtn').innerHTML="Location Failed (Manual Only)"; });
-        }
-
-        // --- LOCATION DETECT FOR SHOP REGISTRATION (NEW) ---
-        function getShopLocation() {
-            const btn = document.getElementById('shopLocBtn');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Detecting GPS...`;
-            navigator.geolocation.getCurrentPosition(p => { 
-                shopRegLat = p.coords.latitude; 
-                shopRegLng = p.coords.longitude; 
-                btn.innerHTML = `<i class="fas fa-check"></i> GPS Coordinates Saved!`; 
-                btn.classList.remove('bg-blue-50', 'text-blue-600');
-                btn.classList.add('bg-green-50', 'text-green-600', 'border-green-200');
-                // Fill the text input as well for backup
-                document.getElementById('reqLoc').value = `${p.coords.latitude}, ${p.coords.longitude}`;
-            }, 
-            () => { alert("Permission Denied"); btn.innerHTML = "GPS Failed. Enter Manually."; });
-        }
-
-        function placeOrder() {
-            if(!userInfo) return location.reload();
-            let addr = document.getElementById('cAddr').value;
-            if(!addr) return alert("Enter Address");
+        window.filterShop = (id) => { filterShopId = id; document.getElementById('gridTitle').innerText = id ? "Shop Menu" : "Recommended"; renderProducts(); };
+        window.filterCat = (c) => { filterCatName = c; renderProducts(); };
+        window.modQty = (id, c) => { let i = window.cart.find(x => x.id == id); if (i) { i.qty += c; if (i.qty <= 0) window.cart = window.cart.filter(x => x.id != id); } else { let p = window.products.find(x => x.id == id); if(p) window.cart.push({ ...p, qty: 1 }); } localStorage.setItem('f_temp_cart', JSON.stringify(window.cart)); renderProducts(); if (!document.getElementById('cartModal').classList.contains('hidden')) window.openCart(); };
+        
+        window.openCart = () => { 
+            if (!window.cart.length) return alert("Cart Empty"); 
+            if (window.user) { document.getElementById('orderName').value = window.user.name; document.getElementById('orderPhone').value = window.user.phone; } 
+            document.getElementById('cartList').innerHTML = window.cart.map(i => `<div class="flex justify-between items-center text-sm font-bold border-b pb-2"><div class="flex items-center gap-2"><img src="${i.img}" class="w-8 h-8 rounded"><p>${i.name} x${i.qty}</p></div><span>₹${i.price * i.qty}</span></div>`).join(''); 
             
-            // Group orders by Shop
-            let ordersByShop = {};
-            cart.forEach(item => {
-                if(!ordersByShop[item.shopId]) ordersByShop[item.shopId] = [];
-                ordersByShop[item.shopId].push(item);
-            });
+            // Re-calc for QR
+            let total = window.cart.reduce((a, b) => a + b.price * b.qty, 0);
+            document.getElementById('totalPrice').innerText = '₹' + total; 
+            
+            // Default select COD
+            document.querySelector('input[value="COD"]').click();
+            
+            document.getElementById('cartModal').classList.remove('hidden'); 
+        };
+        
+        document.getElementById('placeOrderBtn').onclick = async () => {
+            let name = document.getElementById('orderName').value, phone = document.getElementById('orderPhone').value, addr = document.getElementById('cAddr').value;
+            let payMode = document.querySelector('input[name="payMode"]:checked').value;
+            let utr = document.getElementById('utrNo').value;
 
-            let savedOrders = JSON.parse(localStorage.getItem('f_orders')) || [];
+            if (!name || !phone || !addr) return alert("Fill all details");
+            if (payMode === 'UPI' && !utr) return alert("Enter UTR Number for UPI Payment");
 
-            for (let sId in ordersByShop) {
-                let shopItems = ordersByShop[sId];
-                let subTotal = shopItems.reduce((a,b)=>a+(b.price*b.qty),0);
-                
-                let order = {
-                    id: 'ORD' + Math.floor(1000 + Math.random() * 9000),
-                    shopId: sId,
-                    customer: { name: userInfo.name, phone: userInfo.phone, addr, lat: userLat, lng: userLng },
-                    items: shopItems,
-                    total: subTotal,
-                    status: 'Pending',
-                    date: new Date().toLocaleString()
-                };
-                savedOrders.unshift(order);
-                localStorage.setItem('f_last_order_id', order.id);
-                localStorage.setItem('f_last_status', 'Pending');
-            }
+            let shopGroups = {}; window.cart.forEach(i => { if (!shopGroups[i.shopId]) shopGroups[i.shopId] = []; shopGroups[i.shopId].push(i) });
+            try { let baseFee = 20; for (let sid in shopGroups) { 
+                await addDoc(collection(db, "orders"), { 
+                    shopId: sid, customer: { name, phone, addr, lat: window.userLat, lng: window.userLng }, 
+                    items: shopGroups[sid], total: shopGroups[sid].reduce((a, b) => a + (b.price * b.qty), 0) + baseFee, deliveryFee: baseFee, 
+                    status: 'Pending', riderPhone: null, date: new Date().toLocaleString(), timestamp: Date.now(), 
+                    paymentMethod: payMode, utr: payMode === 'UPI' ? utr : null, paymentVerified: false,
+                    timeline: [{ status: 'Pending', msg: 'Order Placed', time: new Date().toLocaleTimeString() }] 
+                }); 
+            } window.cart = []; localStorage.removeItem('f_temp_cart'); document.getElementById('cartModal').classList.add('hidden'); renderProducts(); showToast('Success', 'Order Placed'); } catch (e) { alert("Error: " + e.message); }
+        };
 
-            localStorage.setItem('f_orders', JSON.stringify(savedOrders));
-            cart=[]; localStorage.removeItem('f_temp_cart'); 
-            document.getElementById('cartModal').classList.add('hidden'); 
-            loadData();
-            showToast("Order Placed Successfully!");
-        }
-
-        function submitShopReq() {
-            let req = { 
-                shopName: document.getElementById('reqName').value, 
-                owner: document.getElementById('reqOwner').value, 
-                phone: document.getElementById('reqPhone').value, 
-                location: document.getElementById('reqLoc').value, // Text Address
-                lat: shopRegLat, // GPS Lat
-                lng: shopRegLng, // GPS Lng
-                bio: document.getElementById('reqBio').value 
-            };
-            if(!req.phone) return alert("Fill details");
-            let reqs = JSON.parse(localStorage.getItem('f_shop_requests')) || [];
-            reqs.push(req); localStorage.setItem('f_shop_requests', JSON.stringify(reqs));
-            alert("Request Sent!"); document.getElementById('shopReqModal').classList.add('hidden');
-        }
-
-        // --- NAVIGATION ---
-        function switchView(v) {
-            document.getElementById('view-home').style.display = v=='home'?'block':'none';
-            document.getElementById('view-history').style.display = v=='history'?'block':'none';
-            if(v=='history') renderHistory();
-        }
-
-        function renderHistory() {
-            const allOrders = JSON.parse(localStorage.getItem('f_orders')) || [];
-            const myOrders = allOrders.filter(o => o.customer.phone === userInfo.phone);
-            document.getElementById('historyList').innerHTML = myOrders.length ? myOrders.map(o => {
-                let sName = shops.find(s=>s.id==o.shopId)?.shopName || 'Shop';
-                return `<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100"><div class="flex justify-between items-start mb-2"><div><span class="text-xs font-bold text-slate-400">#${o.id} • ${sName}</span><p class="text-[10px] text-slate-400">${o.date}</p></div><span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-slate-100 text-slate-600">${o.status}</span></div><div class="text-xs text-slate-600 font-medium mb-3 border-b border-slate-50 pb-2">${o.items.map(i=>`${i.qty}x ${i.name}`).join(', ')}</div><div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-400">Total</span><span class="text-lg font-black text-slate-800">₹${o.total}</span></div></div>`;
-            }).join('') : `<div class="text-center py-10 opacity-50"><p>No orders yet</p></div>`;
-        }
-
-        // PWA & Utils
-        let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installPrompt').classList.remove('hidden'); });
-        function installApp() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt=null; document.getElementById('installPrompt').classList.add('hidden'); } }
-        function showToast(m){ let t=document.getElementById('toast'); document.getElementById('toastMsg').innerText=m; t.style.opacity=1; t.style.transform='translate(-50%,0)'; setTimeout(()=>{t.style.opacity=0; t.style.transform='translate(-50%,-20px)'}, 2500); }
-        function closeCart(){ document.getElementById('cartModal').classList.add('hidden'); }
-
-        loadData();
+        window.view = (v) => { document.getElementById('view-home').style.display = v == 'home' ? 'block' : 'none'; document.getElementById('view-hist').style.display = v == 'hist' ? 'block' : 'none'; };
+        document.getElementById('search').addEventListener('input', renderProducts);
     </script>
 </body>
 </html>
