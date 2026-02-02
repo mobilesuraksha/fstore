@@ -19,9 +19,6 @@
         .sidebar-link.active { background: #ea580c; color: white; box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3); }
         .slide-up { animation: slideUp 0.3s ease-out forwards; }
         @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         @media (max-width: 768px) { .sidebar { display: none; } .mobile-nav { display: flex; } .main-content { margin-left: 0; padding-bottom: 90px; } }
         @media (min-width: 769px) { .sidebar { display: block; } .mobile-nav { display: none; } .main-content { margin-left: 280px; } }
@@ -64,11 +61,11 @@
                 <span id="reqBadge" class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full hidden shadow-sm">0</span>
             </button>
             <button onclick="view('shops')" id="nav-shops" class="sidebar-link w-full"><i class="fas fa-store w-6 text-lg"></i> Manage Shops</button>
-            <button onclick="view('menu')" id="nav-menu" class="sidebar-link w-full"><i class="fas fa-utensils w-6 text-lg"></i> Food Menu</button>
+            <button onclick="view('menu')" id="nav-menu" class="sidebar-link w-full"><i class="fas fa-utensils w-6 text-lg"></i> Food & Items</button>
             <button onclick="view('riders')" id="nav-riders" class="sidebar-link w-full"><i class="fas fa-motorcycle w-6 text-lg"></i> Rider Fleet</button>
-            <button onclick="view('ord')" id="nav-ord" class="sidebar-link w-full"><i class="fas fa-shopping-bag w-6 text-lg"></i> Orders & Live</button>
-            <button onclick="view('offers')" id="nav-offers" class="sidebar-link w-full"><i class="fas fa-percent w-6 text-lg"></i> Offers & Deals</button>
-            <button onclick="view('set')" id="nav-set" class="sidebar-link w-full"><i class="fas fa-cog w-6 text-lg"></i> App Settings</button>
+            <button onclick="view('ord')" id="nav-ord" class="sidebar-link w-full"><i class="fas fa-shopping-bag w-6 text-lg"></i> Orders</button>
+            <button onclick="view('offers')" id="nav-offers" class="sidebar-link w-full"><i class="fas fa-percent w-6 text-lg"></i> Offers</button>
+            <button onclick="view('set')" id="nav-set" class="sidebar-link w-full"><i class="fas fa-cog w-6 text-lg"></i> Settings</button>
         </nav>
         <div class="absolute bottom-6 left-6 right-6">
             <button onclick="location.reload()" class="w-full bg-slate-50 text-slate-500 py-3.5 rounded-xl font-bold text-xs hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center gap-2 border border-slate-200"><i class="fas fa-power-off"></i> LOGOUT</button>
@@ -93,8 +90,8 @@
                     <h3 class="text-4xl font-black text-orange-600 mt-2 relative z-10" id="dashOrd">0</h3>
                 </div>
                 <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm group">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Shops</p>
-                    <h3 class="text-4xl font-black text-purple-600 mt-2" id="dashShops">0</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cash Pending (Riders)</p>
+                    <h3 class="text-4xl font-black text-red-500 mt-2 group-hover:text-red-600 transition" id="dashPendingCash">₹0</h3>
                 </div>
                 <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm group">
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Riders</p>
@@ -108,12 +105,18 @@
 
         <div id="view-req" class="hidden slide-up">
             <h2 class="text-3xl font-black text-slate-800 mb-6">Pending Approvals</h2>
+            
             <div class="mb-8">
-                <h3 class="font-black text-xl mb-4 text-orange-600 border-b pb-2 flex justify-between items-center">Rider Applications <span class="bg-orange-100 text-orange-600 px-2 rounded-lg text-xs" id="riderReqCount">0</span></h3>
+                <h3 class="font-black text-xl mb-4 text-orange-600 border-b pb-2 flex justify-between items-center">
+                    Rider Applications <span class="bg-orange-100 text-orange-600 px-2 rounded-lg text-xs" id="riderReqCount">0</span>
+                </h3>
                 <div id="riderReqList" class="grid md:grid-cols-2 gap-4"></div>
             </div>
+
             <div>
-                <h3 class="font-black text-xl mb-4 text-blue-600 border-b pb-2 flex justify-between items-center">Shop Applications <span class="bg-blue-100 text-blue-600 px-2 rounded-lg text-xs" id="shopReqCount">0</span></h3>
+                <h3 class="font-black text-xl mb-4 text-blue-600 border-b pb-2 flex justify-between items-center">
+                    Shop Applications <span class="bg-blue-100 text-blue-600 px-2 rounded-lg text-xs" id="shopReqCount">0</span>
+                </h3>
                 <div id="shopReqList" class="grid md:grid-cols-2 gap-4"></div>
             </div>
         </div>
@@ -134,7 +137,7 @@
         <div id="view-menu" class="hidden slide-up">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-black text-slate-800 tracking-tight">Global Menu</h2>
-                <button onclick="document.getElementById('prodModal').classList.remove('hidden')" class="bg-orange-600 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition"><i class="fas fa-plus"></i> Add Item</button>
+                <button onclick="document.getElementById('prodModal').classList.remove('hidden'); document.getElementById('prodMode').value='add';" class="bg-orange-600 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition"><i class="fas fa-plus"></i> Add Item</button>
             </div>
             <div id="allProdList" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
         </div>
@@ -185,6 +188,7 @@
                         <button id="saveSettingsBtn" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow-lg hover:scale-[1.02]">SAVE SETTINGS</button>
                     </div>
                 </div>
+                
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-red-100 h-fit">
                     <h2 class="text-2xl font-black mb-6 text-red-600">Security</h2>
                     <div class="space-y-4">
@@ -284,7 +288,9 @@
 
     <div id="prodModal" class="fixed inset-0 bg-slate-900/80 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2rem] p-6 slide-up shadow-2xl">
-            <h3 class="font-black text-xl mb-4">Add Item</h3>
+            <h3 class="font-black text-xl mb-4" id="prodModalTitle">Add Item</h3>
+            <input type="hidden" id="editProdId">
+            <input type="hidden" id="prodMode">
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <input id="pName" placeholder="Name" class="col-span-2 border-2 border-slate-100 p-3 rounded-xl font-bold outline-none">
                 <input id="pPrice" placeholder="Price" class="border-2 border-slate-100 p-3 rounded-xl font-bold outline-none">
@@ -293,7 +299,7 @@
                 <select id="pShop" class="col-span-2 border-2 border-slate-100 p-3 rounded-xl font-bold outline-none"></select>
                 <input type="file" id="pImgFile" class="col-span-2 border-2 border-dashed border-slate-200 p-3 rounded-xl font-bold text-xs">
             </div>
-            <button id="saveProdBtn" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold">ADD ITEM</button>
+            <button id="saveProdBtn" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold">SAVE ITEM</button>
             <button onclick="document.getElementById('prodModal').classList.add('hidden')" class="w-full text-center text-xs font-bold text-slate-400 py-2">Cancel</button>
         </div>
     </div>
@@ -385,7 +391,6 @@
                 renderRiders();
                 document.getElementById('eoRider').innerHTML = `<option value="">Assign Rider</option>` + riders.map(r=>`<option value="${r.phone}">${r.name} (${r.isOnline?'On':'Off'})</option>`).join('');
             });
-            // Fetch Shops (Old + New)
             onSnapshot(collection(db, "shops"), s => { 
                 shops=s.docs.map(d=>({id:d.id,...d.data()})); 
                 document.getElementById('dashShops').innerText = shops.length; 
@@ -487,21 +492,9 @@
             document.getElementById('riderReqList').innerHTML = riderReqs.map(r => `<div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center"><div><h4 class="font-bold">${r.name}</h4><p class="text-xs text-slate-500">${r.vehicle} • ${r.phone}</p></div><div class="flex gap-2"><button onclick="window.appRider('${r.id}')" class="bg-green-500 text-white px-3 py-1 rounded-lg text-xs font-bold">Approve</button><button onclick="window.delRiderReq('${r.id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold">Reject</button></div></div>`).join('') || '<p class="text-xs text-slate-400">No pending rider requests</p>';
             let total = reqs.length + riderReqs.length; document.getElementById('reqBadge').innerText = total; document.getElementById('reqBadge').classList.toggle('hidden', total === 0);
         }
-        // Correctly Renders ALL Shops (Old + New)
-        function renderShops() { 
-            let s = document.getElementById('shopSearch')?.value.toLowerCase() || ''; 
-            document.getElementById('shopList').innerHTML = shops.filter(x=>x.shopName.toLowerCase().includes(s)).map(s => `
-            <div class="bg-white p-5 rounded-2xl shadow-sm border relative">
-                <h4 class="font-bold text-lg">${s.shopName}</h4>
-                <p class="text-xs text-slate-500">${s.phone}</p>
-                <div class="flex gap-2 mt-3">
-                    <button onclick="window.editShop('${s.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold">Edit</button>
-                    <button onclick="window.delShop('${s.id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold">Delete</button>
-                </div>
-            </div>`).join(''); 
-        }
+        function renderShops() { let s = document.getElementById('shopSearch')?.value.toLowerCase() || ''; document.getElementById('shopList').innerHTML = shops.filter(x=>x.shopName.toLowerCase().includes(s)).map(s => `<div class="bg-white p-5 rounded-2xl shadow-sm border relative"><h4 class="font-bold text-lg">${s.shopName}</h4><p class="text-xs text-slate-500">${s.phone}</p><div class="flex gap-2 mt-3"><button onclick="window.editShop('${s.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold">Edit</button><button onclick="window.delShop('${s.id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-bold">Delete</button></div></div>`).join(''); }
         function renderRiders() { let s = document.getElementById('riderSearch')?.value.toLowerCase() || ''; document.getElementById('ridList').innerHTML = riders.filter(x => x.name.toLowerCase().includes(s) || x.phone.includes(s)).map(r => `<div class="bg-white p-5 rounded-2xl shadow-sm border relative"><h4 class="font-bold">${r.name}</h4><p class="text-xs text-slate-500">${r.phone}</p><p class="text-xs font-bold ${r.isOnline?'text-green-500':'text-slate-400'}">● ${r.isOnline?'Online':'Offline'}</p><div class="flex gap-2 mt-3"><button onclick="window.openRiderDetail('${r.id}')" class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-xs font-bold">View / Manage</button><button onclick="window.editRider('${r.id}')" class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold">Edit</button><button onclick="window.delRider('${r.id}')" class="text-red-500 text-xs font-bold underline">Remove</button></div></div>`).join(''); }
-        function renderProd() { document.getElementById('allProdList').innerHTML = products.map(p => `<div class="bg-white p-3 rounded-2xl border text-center relative group"><button onclick="window.delProd('${p.id}')" class="absolute top-1 right-1 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button><div class="h-20 bg-slate-50 rounded-xl mb-2 overflow-hidden"><img src="${p.img}" class="w-full h-full object-cover"></div><p class="font-bold text-xs truncate">${p.name}</p><p class="text-xs font-black text-orange-500">₹${p.price}</p></div>`).join(''); }
+        function renderProd() { document.getElementById('allProdList').innerHTML = products.map(p => `<div class="bg-white p-3 rounded-2xl border text-center relative group"><button onclick="window.editProd('${p.id}')" class="absolute top-1 left-1 text-blue-400 hover:text-blue-600"><i class="fas fa-pen"></i></button><button onclick="window.delProd('${p.id}')" class="absolute top-1 right-1 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button><div class="h-20 bg-slate-50 rounded-xl mb-2 overflow-hidden"><img src="${p.img}" class="w-full h-full object-cover"></div><p class="font-bold text-xs truncate">${p.name}</p><p class="text-xs font-black text-orange-500">₹${p.price}</p></div>`).join(''); }
 
         // --- ACTIONS ---
         window.appShop = async (id) => { let r=reqs.find(x=>x.id==id); await addDoc(collection(db,"shops"), {...r, pass:'123456'}); await deleteDoc(doc(db,"shop_requests",id)); };
@@ -531,11 +524,49 @@
         
         window.delRider = async (id) => { if(confirm("Remove Rider?")) await deleteDoc(doc(db,"riders",id)); };
 
-        document.getElementById('saveProdBtn').onclick = () => {
-            let n=document.getElementById('pName').value, pr=document.getElementById('pPrice').value, f=document.getElementById('pImgFile').files[0];
-            if(!n||!pr||!f) return alert("File Missing");
-            let r = new FileReader(); r.readAsDataURL(f);
-            r.onload = async () => { await addDoc(collection(db,"products"), {shopId:document.getElementById('pShop').value, name:n, price:pr, stock:document.getElementById('pQty').value, cat:document.getElementById('pCat').value, img:r.result, inStock:true}); document.getElementById('prodModal').classList.add('hidden'); }
+        window.addOffer = async () => { await addDoc(collection(db,"offers"), {title:document.getElementById('offTitle').value, desc:document.getElementById('offDesc').value, code:document.getElementById('offCode').value, color:document.getElementById('offColor').value, tag:'Deal'}); document.getElementById('offerModal').classList.add('hidden'); };
+        window.delOffer = async (id) => await deleteDoc(doc(db,"offers",id));
+
+        // -- Product CRUD --
+        window.editProd = (id) => {
+            let p = products.find(x=>x.id==id);
+            document.getElementById('prodModalTitle').innerText = "Edit Item";
+            document.getElementById('prodMode').value = id; // Store ID in hidden input
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pPrice').value = p.price;
+            document.getElementById('pQty').value = p.stock;
+            document.getElementById('pCat').value = p.cat;
+            document.getElementById('pShop').value = p.shopId;
+            document.getElementById('saveProdBtn').innerText = "UPDATE ITEM";
+            document.getElementById('prodModal').classList.remove('hidden');
+        };
+
+        document.getElementById('saveProdBtn').onclick = async () => {
+            let id = document.getElementById('prodMode').value;
+            let n = document.getElementById('pName').value, pr = document.getElementById('pPrice').value;
+            let f = document.getElementById('pImgFile').files[0];
+            
+            let data = {
+                shopId: document.getElementById('pShop').value,
+                name: n, price: pr,
+                stock: document.getElementById('pQty').value,
+                cat: document.getElementById('pCat').value,
+                inStock: true
+            };
+
+            if (f) {
+                let r = new FileReader(); r.readAsDataURL(f);
+                r.onload = async () => {
+                    data.img = r.result;
+                    if(id === 'add') await addDoc(collection(db,"products"), data);
+                    else await updateDoc(doc(db,"products",id), data);
+                    document.getElementById('prodModal').classList.add('hidden');
+                }
+            } else {
+                if(id === 'add') return alert("Image Required");
+                await updateDoc(doc(db,"products",id), data);
+                document.getElementById('prodModal').classList.add('hidden');
+            }
         };
         window.delProd = async (id) => { if(confirm("Delete Item?")) await deleteDoc(doc(db,"products",id)); };
 
