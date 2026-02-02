@@ -3,73 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partner Portal | F-Store</title>
+    <title>VIKA Partner | Dashboard</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ea580c">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
-        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .glass { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .slide-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
+        .gradient-orange { background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); }
     </style>
 </head>
 <body class="p-4 md:p-8 select-none text-slate-800">
 
+    <audio id="orderSound" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3" preload="auto"></audio>
+
+    <div id="installBox" class="hidden mb-6 bg-slate-900 text-white p-4 rounded-2xl flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+             <i class="fas fa-download text-orange-500"></i>
+             <div><p class="text-xs font-bold">Install Partner App</p><p class="text-[9px] text-slate-400">Get order alerts instantly</p></div>
+        </div>
+        <button id="installBtn" class="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-[10px] font-black">INSTALL</button>
+    </div>
+
     <div id="login" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-6">
         <div class="w-full max-w-sm text-center">
-            <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6 text-orange-600 text-3xl font-black">P</div>
-            <h2 class="text-3xl font-black mb-2 text-slate-800 tracking-tighter">PARTNER LOGIN</h2>
-            <p class="text-xs text-slate-400 mb-8 font-bold uppercase tracking-widest">Restaurant Dashboard</p>
-            <input id="lPhone" type="number" placeholder="Registered Mobile" class="border-2 border-slate-100 p-4 rounded-2xl w-full mb-3 font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
+            <div class="w-20 h-20 gradient-orange rounded-3xl flex items-center justify-center mx-auto mb-6 text-white text-3xl font-black shadow-lg rotate-3">P</div>
+            <h2 class="text-3xl font-black mb-2 text-slate-800 tracking-tighter">VIKA PARTNER</h2>
+            <p class="text-xs text-slate-400 mb-8 font-bold uppercase tracking-widest">Manage Your Business</p>
+            
+            <input id="lPhone" type="number" placeholder="Mobile Number" class="border-2 border-slate-100 p-4 rounded-2xl w-full mb-3 font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
             <input id="lPass" type="password" placeholder="Password" class="border-2 border-slate-100 p-4 rounded-2xl w-full mb-6 font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
-            <button id="loginBtn" class="bg-orange-600 text-white w-full py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition mb-4">ENTER DASHBOARD</button>
-            <button onclick="showRegister()" class="text-slate-400 text-xs font-bold underline hover:text-orange-600">New Shop? Register Here</button>
+            
+            <button id="loginBtn" class="gradient-orange text-white w-full py-4 rounded-2xl font-bold shadow-xl hover:scale-105 transition mb-4">OPEN DASHBOARD</button>
+            <button onclick="showRegister()" class="text-slate-400 text-xs font-bold underline hover:text-orange-600">Register New Restaurant</button>
         </div>
     </div>
 
     <div id="register" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-6 hidden">
         <div class="w-full max-w-sm relative h-full overflow-y-auto pt-10 pb-10">
             <button onclick="showLogin()" class="absolute top-4 left-0 text-slate-400 font-bold text-sm flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back</button>
-            <h2 class="text-2xl font-black mb-6 text-slate-800 tracking-tighter mt-4">Register New Shop</h2>
+            <h2 class="text-2xl font-black mb-6 text-slate-800 mt-4">New Shop Registration</h2>
             <div class="space-y-4">
-                <div><label class="text-xs font-bold text-slate-400 ml-2">Shop Name</label><input id="regShopName" placeholder="e.g. Burger King" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 ml-2">Owner Name</label><input id="regOwnerName" placeholder="Your Name" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500"></div>
-                <div><label class="text-xs font-bold text-slate-400 ml-2">Mobile Number</label><input id="regPhone" type="number" placeholder="10 Digit Mobile" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500"></div>
-                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 text-center"><p class="text-xs text-blue-500 font-bold mb-2">📍 Exact Shop Location (Required)</p><button onclick="detectLocation()" id="locBtn" class="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition animate-pulse"><i class="fas fa-crosshairs text-lg"></i> DETECT LIVE LOCATION</button><p id="locStatus" class="text-[10px] text-slate-400 mt-2">Click button while at the shop.</p></div>
-                <input type="hidden" id="latLngStr">
-                <div><label class="text-xs font-bold text-slate-400 ml-2">Description / Address</label><textarea id="regBio" placeholder="Full address and details..." class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500 h-20"></textarea></div>
-            </div>
-            <button onclick="submitRequest()" id="submitBtn" class="bg-slate-900 text-white w-full py-4 rounded-2xl font-bold shadow-xl mt-6 hover:scale-105 transition mb-10">SUBMIT REQUEST</button>
-        </div>
-    </div>
-
-    <div id="dash" class="hidden max-w-xl mx-auto pb-20">
-        <div class="flex justify-between items-center mb-8">
-            <div><h1 class="text-3xl font-black text-slate-800 leading-none" id="sName">Shop</h1><div class="flex items-center gap-2 mt-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><p class="text-xs text-green-600 font-bold uppercase tracking-wider">Live & Receiving Orders</p></div></div>
-            <button onclick="location.reload()" class="text-red-500 text-xs font-bold border border-red-100 px-4 py-2 rounded-xl hover:bg-red-50">LOGOUT</button>
-        </div>
-
-        <div class="bg-white p-6 rounded-[2rem] shadow-xl shadow-slate-200/60 mb-8 border border-slate-100">
-            <h3 class="font-black text-lg mb-4 flex items-center gap-2 text-slate-700"><i class="fas fa-plus-circle text-orange-500"></i> Add Menu Item</h3>
-            <div class="space-y-3">
-                <input id="pName" placeholder="Item Name" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
-                <div class="flex gap-3">
-                    <input id="pPrice" type="number" placeholder="Price (₹)" class="w-1/3 border-2 border-slate-100 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
-                    <div class="w-2/3 border-2 border-dashed border-slate-300 p-3 rounded-xl text-xs bg-slate-50 relative hover:bg-slate-100 transition"><input id="pImg" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"><span class="text-slate-400 font-bold flex items-center justify-center h-full gap-2"><i class="fas fa-camera"></i> Upload Image</span></div>
+                <div><label class="text-xs font-bold text-slate-400 ml-2">Shop Name</label><input id="regShopName" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500"></div>
+                <div><label class="text-xs font-bold text-slate-400 ml-2">Mobile Number</label><input id="regPhone" type="number" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500"></div>
+                <div class="bg-orange-50 p-4 rounded-2xl border border-orange-100 text-center">
+                    <button onclick="detectLocation()" id="locBtn" class="w-full py-3 bg-orange-600 text-white rounded-xl text-xs font-bold shadow-lg flex items-center justify-center gap-2"><i class="fas fa-map-marker-alt"></i> DETECT SHOP LOCATION</button>
+                    <input type="hidden" id="latLngStr">
+                    <p id="locStatus" class="text-[10px] text-slate-500 mt-2 italic">Required for delivery riders to find you.</p>
                 </div>
-                <select id="pCat" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500"><option>Food</option><option>Fashion</option><option>Mobile</option><option>Grocery</option></select>
-                <button id="addProdBtn" class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg hover:bg-slate-800 transition">ADD TO MENU</button>
+                <div><label class="text-xs font-bold text-slate-400 ml-2">Address Details</label><textarea id="regBio" class="border-2 border-slate-100 p-3 rounded-xl w-full font-bold bg-slate-50 outline-none focus:border-orange-500 h-20"></textarea></div>
+            </div>
+            <button onclick="submitRequest()" id="submitBtn" class="bg-slate-900 text-white w-full py-4 rounded-2xl font-bold shadow-xl mt-6 hover:scale-105 transition">SUBMIT FOR APPROVAL</button>
+        </div>
+    </div>
+
+    <div id="dash" class="hidden max-w-3xl mx-auto pb-20">
+        <header class="flex justify-between items-center mb-8 bg-white p-5 rounded-3xl shadow-sm">
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 leading-none" id="sName">Shop</h1>
+                <div class="flex items-center gap-2 mt-1"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span><p class="text-[10px] text-green-600 font-bold uppercase tracking-wider">Store Open</p></div>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Today's Sales</p>
+                <p class="text-xl font-black text-orange-600">₹<span id="shopSales">0</span></p>
+            </div>
+        </header>
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm mb-8 border border-slate-100">
+            <h3 class="font-black text-lg mb-4 flex items-center gap-2 text-slate-700"><i class="fas fa-plus-circle text-orange-500"></i> Add Menu Item</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input id="pName" placeholder="Item Name" class="border-2 border-slate-50 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
+                <div class="flex gap-2">
+                    <input id="pPrice" type="number" placeholder="Price (₹)" class="w-1/2 border-2 border-slate-50 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500 transition">
+                    <select id="pCat" class="w-1/2 border-2 border-slate-50 p-3 rounded-xl text-sm font-bold bg-slate-50 outline-none focus:border-orange-500">
+                        <option>Food</option><option>Sweets</option><option>Beverage</option><option>Snacks</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2 border-2 border-dashed border-slate-200 p-4 rounded-2xl text-center relative hover:bg-slate-50 transition">
+                    <input id="pImg" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <p class="text-xs font-bold text-slate-400"><i class="fas fa-image mr-1"></i> Upload Item Photo (Max 1MB)</p>
+                </div>
+                <button id="addProdBtn" class="md:col-span-2 bg-slate-900 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-black transition">SAVE TO MENU</button>
             </div>
         </div>
 
-        <h3 class="font-black text-xl mb-4 text-slate-800 flex items-center gap-2"><i class="fas fa-bell text-orange-500"></i> Incoming Orders</h3>
-        <div id="orders" class="space-y-4 pb-20"><div class="text-center py-10 opacity-30"><i class="fas fa-utensils text-4xl mb-3"></i><p class="font-bold text-sm">No active orders</p></div></div>
+        <h3 class="font-black text-xl mb-4 text-slate-800 flex items-center gap-2"><i class="fas fa-clock text-orange-500"></i> Active Orders</h3>
+        <div id="orders" class="space-y-4 pb-20">
+            <div class="text-center py-10 opacity-30"><i class="fas fa-utensils text-4xl mb-3"></i><p class="font-bold text-sm">Waiting for customers...</p></div>
+        </div>
     </div>
-
-    <audio id="orderSound" src="https://assets.mixkit.co/active_storage/sfx/933/933-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -78,40 +106,55 @@
         const firebaseConfig = { apiKey: "AIzaSyCwyzE9sdZZUU3dHUix23zEzFkGr2nNRyw", authDomain: "foodhub-8ae15.firebaseapp.com", projectId: "foodhub-8ae15", storageBucket: "foodhub-8ae15.firebasestorage.app", messagingSenderId: "274265160043", appId: "1:274265160043:web:81238fd424681e7f70342e" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
         let me = null;
-        let previousOrderCount = 0;
+        let lastOrderCount = 0;
+
+        // --- INSTALL LOGIC ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('installBox').classList.remove('hidden');
+        });
+        document.getElementById('installBtn').onclick = () => { if(deferredPrompt) deferredPrompt.prompt(); };
 
         window.showRegister = () => { document.getElementById('login').classList.add('hidden'); document.getElementById('register').classList.remove('hidden'); }
         window.showLogin = () => { document.getElementById('register').classList.add('hidden'); document.getElementById('login').classList.remove('hidden'); }
 
+        // Location Detection
         window.detectLocation = () => {
             let btn = document.getElementById('locBtn');
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Getting GPS...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Locating...`;
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (p) => { document.getElementById('latLngStr').value = `${p.coords.latitude},${p.coords.longitude}`; btn.innerHTML = `<i class="fas fa-check-circle"></i> LOCATION SAVED`; btn.className = "w-full py-3 bg-green-500 text-white rounded-xl text-xs font-bold shadow-lg"; document.getElementById('locStatus').innerText = `Locked: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`; },
-                    (e) => { alert("GPS Denied"); btn.innerHTML = "RETRY LOCATION"; }
+                    (p) => { 
+                        document.getElementById('latLngStr').value = `${p.coords.latitude},${p.coords.longitude}`; 
+                        btn.innerHTML = `<i class="fas fa-check"></i> LOCATION SAVED`;
+                        btn.className = "w-full py-3 bg-green-500 text-white rounded-xl text-xs font-bold";
+                    },
+                    (e) => { alert("Please enable GPS on your device"); btn.innerHTML = "RETRY LOCATION"; }
                 );
-            } else alert("GPS not supported.");
+            }
         }
 
+        // Registration Submission
         window.submitRequest = async () => {
             let sName = document.getElementById('regShopName').value;
-            let oName = document.getElementById('regOwnerName').value;
             let phone = document.getElementById('regPhone').value;
-            let bio = document.getElementById('regBio').value;
             let location = document.getElementById('latLngStr').value;
-            if(!sName || !phone || !location) return alert("Fill all details & Detect Location!");
-            try {
-                let btn = document.getElementById('submitBtn'); btn.innerText = "Sending...";
-                await addDoc(collection(db, "shop_requests"), { shopName: sName, owner: oName, phone: phone, bio: bio, location: location, status: 'Pending', timestamp: Date.now() });
-                alert("✅ Request Sent! Wait for Admin Approval."); window.showLogin();
-            } catch(e) { alert("Error: " + e.message); }
+            if(!sName || !phone || !location) return alert("Fill all details and Detect Location!");
+            
+            await addDoc(collection(db, "shop_requests"), { 
+                shopName: sName, phone: phone, location: location, 
+                bio: document.getElementById('regBio').value, status: 'Pending', timestamp: Date.now() 
+            });
+            alert("Request sent! Admin will contact you."); 
+            window.showLogin();
         };
 
+        // Login Logic
         document.getElementById('loginBtn').onclick = async () => {
             let p = document.getElementById('lPhone').value, pass = document.getElementById('lPass').value;
-            if(!p || !pass) return alert("Enter credentials");
             const q = query(collection(db, "shops"), where("phone", "==", p), where("pass", "==", pass));
             const snap = await getDocs(q);
             if(!snap.empty) {
@@ -120,61 +163,99 @@
                 document.getElementById('dash').classList.remove('hidden');
                 document.getElementById('sName').innerText = me.shopName;
                 startListening();
-            } else alert("Invalid Login or Shop not yet Approved.");
+            } else alert("Invalid Login or Shop not Approved.");
         };
 
+        // Live Order Listening
         function startListening() {
             const q = query(collection(db, "orders"), where("shopId", "==", me.id));
             onSnapshot(q, (snap) => {
                 let orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 orders.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-                if (orders.length > previousOrderCount) { document.getElementById('orderSound').play().catch(()=>{}); }
-                previousOrderCount = orders.length;
+                
+                // Play sound if new order arrives
+                if (orders.length > lastOrderCount) {
+                    try { document.getElementById('orderSound').play(); } catch(e) { console.log("Audio play blocked"); }
+                }
+                lastOrderCount = orders.length;
+                
+                // Update Today's Sales
+                let sales = orders.filter(o => o.status === 'Delivered').reduce((a,b) => a + (parseInt(b.total)||0), 0);
+                document.getElementById('shopSales').innerText = sales;
+                
                 renderOrders(orders);
             });
         }
 
         function renderOrders(orders) {
-            if(orders.length === 0) { document.getElementById('orders').innerHTML = `<div class="text-center py-10 opacity-30"><i class="fas fa-utensils text-4xl mb-3"></i><p class="font-bold text-sm">No active orders</p></div>`; return; }
+            let active = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled');
+            if(active.length === 0) { 
+                document.getElementById('orders').innerHTML = `<div class="text-center py-10 opacity-30"><i class="fas fa-utensils text-4xl mb-3"></i><p class="font-bold text-sm">No active orders</p></div>`; 
+                return; 
+            }
 
-            document.getElementById('orders').innerHTML = orders.map(o => {
+            document.getElementById('orders').innerHTML = active.map(o => {
                 let btn = '';
-                
-                // Smart Button Logic for Shop
-                if(o.status === 'Pending' || o.status === 'Approved') btn = `<button onclick="window.upd('${o.id}','Preparing')" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs mt-3 shadow-lg hover:scale-105 transition">ACCEPT & START COOKING</button>`;
-                else if(o.status === 'Preparing' || o.status === 'Accepted') btn = `<button onclick="window.upd('${o.id}','Ready for Pickup')" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold text-xs mt-3 shadow-lg animate-pulse hover:bg-green-600">FOOD READY (NOTIFY RIDER 🔔)</button>`;
-                else if(o.status === 'Ready for Pickup') btn = `<div class="mt-3 text-center text-xs font-bold text-green-600 bg-green-50 py-3 rounded-xl border border-green-200">🔔 Rider Notified. Waiting...</div>`;
-                else btn = `<div class="mt-3 text-center text-xs font-bold text-slate-400 bg-slate-100 py-3 rounded-xl">Status: ${o.status}</div>`;
+                // Status Management
+                if(o.status === 'Pending' || o.status === 'Approved') {
+                    btn = `<button onclick="window.upd('${o.id}','Preparing')" class="w-full gradient-orange text-white py-4 rounded-2xl font-black text-xs mt-3 shadow-lg">ACCEPT & PREPARE</button>`;
+                } else if(o.status === 'Preparing') {
+                    btn = `<button onclick="window.upd('${o.id}','Ready for Pickup')" class="w-full bg-green-500 text-white py-4 rounded-2xl font-black text-xs mt-3 shadow-lg animate-pulse">MARK AS READY (NOTIFY RIDER 🔔)</button>`;
+                } else {
+                    btn = `<div class="mt-3 text-center text-[10px] font-black text-slate-400 bg-slate-100 py-3 rounded-xl uppercase tracking-widest">${o.status}... ${o.riderName ? 'Rider: ' + o.riderName : 'Searching Rider'}</div>`;
+                }
 
-                let payStatus = (o.paymentMethod === 'UPI' && o.paymentVerified) ? '<span class="text-green-600 font-bold ml-2">PAID ONLINE</span>' : '<span class="text-orange-600 font-bold ml-2">CASH ORDER</span>';
+                let payInfo = (o.paymentMethod === 'UPI' && o.paymentVerified) ? 
+                    '<span class="text-green-600 bg-green-50 px-2 py-1 rounded text-[10px] font-black">PAID ONLINE</span>' : 
+                    '<span class="text-orange-600 bg-orange-50 px-2 py-1 rounded text-[10px] font-black">CASH ON DELIVERY</span>';
 
                 return `
-                <div class="bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-lg slide-up relative overflow-hidden">
-                    ${['Pending','Approved'].includes(o.status) ? '<div class="absolute top-0 right-0 bg-yellow-400 text-white text-[10px] font-bold px-2 py-1 rounded-bl-xl blink">NEW</div>' : ''}
-                    <div class="flex justify-between items-center mb-3 border-b border-slate-50 pb-2">
-                        <span class="font-black text-slate-700 text-lg">#${o.id.substr(0,5)}</span>
-                        <div><span class="font-black text-slate-800 text-lg">₹${o.total}</span>${payStatus}</div>
+                <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-md slide-up relative overflow-hidden">
+                    ${(o.status === 'Pending') ? '<div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-4 py-1 rounded-bl-2xl blink">NEW ORDER</div>' : ''}
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="font-black text-slate-800 text-lg">#${o.id.substr(0,5)}</span>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${new Date(o.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-slate-900 text-xl">₹${o.total}</p>
+                            ${payInfo}
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-xl mb-3"><p class="text-xs font-bold text-slate-400 uppercase mb-1">Items</p><div class="text-sm font-bold text-slate-700">${o.items.map(x=>`<div class="flex justify-between"><span>${x.name}</span><span>x${x.qty}</span></div>`).join('')}</div></div>
-                    <p class="text-xs font-bold text-slate-400 mb-1">Customer: ${o.customer.name}</p>
+                    <div class="bg-slate-50 p-4 rounded-2xl mb-3">
+                        <div class="text-sm font-bold text-slate-700">${o.items.map(x=>`<div class="flex justify-between mb-1"><span>${x.name} <span class="text-orange-500">x${x.qty}</span></span><span>₹${x.price*x.qty}</span></div>`).join('')}</div>
+                    </div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center text-[10px]">👤</div>
+                        <p class="text-xs font-black text-slate-600">${o.customer.name}</p>
+                    </div>
                     ${btn}
                 </div>`;
             }).join('');
         }
 
-        window.upd = async (oid, s) => { await updateDoc(doc(db, "orders", oid), { status: s, timeline: arrayUnion({ status: s, msg: `Shop Update: ${s}`, time: new Date().toLocaleTimeString() }) }); };
+        // Update Order Status
+        window.upd = async (oid, s) => {
+            await updateDoc(doc(db, "orders", oid), { 
+                status: s, 
+                timeline: arrayUnion({ status: s, msg: `Shop: ${s}`, time: new Date().toLocaleTimeString() }) 
+            });
+        };
 
+        // Add Product
         document.getElementById('addProdBtn').onclick = () => {
-            let name = document.getElementById('pName').value, price = document.getElementById('pPrice').value, cat = document.getElementById('pCat').value, file = document.getElementById('pImg').files[0];
-            if(!name || !price || !file) return alert("Fill all details & Image");
-            if(file.size > 1000000) return alert("Image too large! Use < 1MB");
+            let name = document.getElementById('pName').value, price = document.getElementById('pPrice').value, file = document.getElementById('pImg').files[0];
+            if(!name || !price || !file) return alert("Fill Name, Price and Image!");
+            
             const r = new FileReader(); r.readAsDataURL(file);
             r.onload = async function() {
-                try {
-                    let btn = document.getElementById('addProdBtn'); btn.innerText = "Saving...";
-                    await addDoc(collection(db, "products"), { shopId: me.id, name, price, cat, img: r.result });
-                    alert("✅ Item Added!"); document.getElementById('pName').value=""; document.getElementById('pPrice').value=""; document.getElementById('pImg').value=""; btn.innerText = "ADD TO MENU";
-                } catch(e) { alert("Error: " + e.message); }
+                let btn = document.getElementById('addProdBtn'); btn.innerText = "Saving...";
+                await addDoc(collection(db, "products"), { 
+                    shopId: me.id, name, price, cat: document.getElementById('pCat').value, 
+                    img: r.result, inStock: true, timestamp: Date.now() 
+                });
+                alert("Item added to Menu!"); 
+                location.reload();
             };
         };
     </script>
